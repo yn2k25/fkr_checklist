@@ -178,13 +178,15 @@ const helpContent = {
     "<p><strong>Upload ADA forms:</strong></p>" +
     "<p>Follow the naming instructions shown on this step. If anything is unclear, pause and ask staff for help before you save.</p>",
 
+  // UPDATED: help overlay for consultation form with pill
   after_upload_consult:
     "<p><strong>Upload consultation form:</strong></p>" +
     "<ol>" +
     "<li>Scan or photograph the consult form.</li>" +
     "<li>On the person record, upload the file to their documents or memos/files area.</li>" +
     "<li>Make sure the date and notes are visible.</li>" +
-    "</ol>",
+    "</ol>" +
+    "<button class='help-detail' data-subhelp='consult_form'>Consultation form upload screen</button>",
 
   after_receipt:
     "<p><strong>Enter the receipt:</strong></p>" +
@@ -309,6 +311,11 @@ const subHelpContent = {
     title: "Multi-cat receipt example",
     html:
       "<img src='8-multi-cat-receipt-on-person.png' alt='Multi-cat receipt from person record' class='help-image'>"
+  },
+  consult_form: {
+    title: "Consultation form upload example",
+    html:
+      "<img src='10-Consultation-Form.png' alt='Consultation form uploaded on person record' class='help-image'>"
   }
 };
 
