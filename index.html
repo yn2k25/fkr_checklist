@@ -5,7 +5,6 @@
   <title>FKR Adoption Checklist</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="stylesheet" href="styles.css" />
-  <script defer src="script.js"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -149,7 +148,7 @@
           <div class="step-subtitle">The Person record should show an active Adoption outcome.</div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_main_3')">Yes - continue</button>
-            <button class="secondary" onclick="alert('Open the cat record, start an Outcome, and choose Adoption, then tap Yes')">Not yet</button>
+            <button class="secondary" onclick="alert('Open the person record, start an Outcome, and choose Adoption, then tap Yes')">Not yet</button>
             <button class="outline" onclick="showHelp('adopt_main_2')">Show me how</button>
             <button class="outline" onclick="goBack()">Back</button>
           </div>
@@ -282,7 +281,27 @@
         <div class="step" data-step-id="after_upload_ada">
           <div class="pill"><span class="dot"></span><span>After adopter leaves</span></div>
           <div class="step-title">Have ADA forms been uploaded to the cat record?</div>
-          <div class="step-subtitle">Scan and upload all signed ADA pages to the animal record.</div>
+          <div class="step-subtitle">Upload ADA forms and use correct naming:</div>
+          <ol class="ada-steps">
+            <li>
+              Scanned file in Downloads folder:
+              <span class="highlight">"Adoption Disclosure Agreement - kitty name"</span>.
+            </li>
+            <li>
+              On each cat's record, go to <strong>Memo/Files</strong> to upload the file:
+              <ul>
+                <li>
+                  For the file Name, use
+                  <span class="highlight">"Signed Kitten ADA -kitty name"</span> and/or
+                  <span class="highlight">"Signed Medical ADA -kitty name"</span> as appropriate.
+                </li>
+                <li>
+                  Set Type to <span class="highlight">"Adoption Document"</span> and Subtype to
+                  <span class="highlight">"Adoption Disclosure Agreement - ADA"</span>.
+                </li>
+              </ul>
+            </li>
+          </ol>
           <div class="btn-row">
             <button class="primary" onclick="goTo('after_upload_consult')">Yes - continue</button>
             <button class="secondary" onclick="alert('Upload the ADA forms to the cat record, then tap Yes')">Not yet</button>
@@ -429,5 +448,7 @@
       </div>
     </div>
   </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
