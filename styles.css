@@ -1,474 +1,380 @@
-// Navigation state
-let historyStack = ["start"];
-let steps = [];
-let progressLabel;
-let progressBar;
-
-const orderedStepIds = [
-  "start",
-  "prep_appointment",
-  "prep_walkin",
-  "meet",
-  "decision",
-  "adopt_main_1",
-  "adopt_main_2",
-  "adopt_main_3",
-  "adopt_main_4",
-  "adopt_main_5",
-  "adopt_main_6",
-  "adopt_main_7",
-  "adopt_after",
-  "after_leave",
-  "after_memo_cat",
-  "after_association",
-  "after_upload_ada",
-  "after_upload_consult",
-  "after_receipt",
-  "after_calendar",
-  "after_photo",
-  "after_email",
-  "after_whiteboard",
-  "no_adopt",
-  "stop_staff",
-  "done"
-];
-
-let interactionType = null;
-
-// Main help text
-const helpContent = {
-  start:
-    "Choose <strong>Scheduled appointment</strong> if this person was on the calendar.<br><br>" +
-    "Choose <strong>Walk in</strong> if they arrived without a scheduled time.",
-
-  prep_appointment:
-    "<p><strong>For a scheduled appointment:</strong></p>" +
-    "<ol>" +
-    "<li>Open the consultation form and review it before the meet and greet.</li>" +
-    "<li>In PetPoint, search for the person and check for any Do Not Adopt flags.</li>" +
-    "<li>If you see anything concerning, pause and talk with staff before you continue.</li>" +
-    "</ol>",
-
-  prep_walkin:
-    "<p><strong>For a walk in:</strong></p>" +
-    "<ol>" +
-    "<li>Have the visitor complete the consultation form.</li>" +
-    "<li>Check that all required questions are answered.</li>" +
-    "<li>In PetPoint, search for the person or create a new record.</li>" +
-    "<li>Confirm they are not on the Do Not Adopt list before starting a meet and greet.</li>" +
-    "</ol>",
-
-  meet:
-    "<p>During the meet and greet:</p>" +
-    "<ul>" +
-    "<li>Watch how the person handles and talks about the cat.</li>" +
-    "<li>Listen for plans that sound unsafe or do not match FKR policies.</li>" +
-    "<li>If you feel uneasy or unsure, treat it as a concern and pause to talk with staff.</li>" +
-    "</ul>",
-
-  decision:
-    "<p>If they clearly chose a specific cat today, pick <strong>Yes</strong> and move into the adoption steps.</p>" +
-    "<p>If they are still thinking, left without choosing, or want to come back another day, pick <strong>No</strong>.</p>",
-
-  adopt_main_1:
-    "<p><strong>PetPoint person record:</strong></p>" +
-    "<ol>" +
-    "<li>Search by name, email, or phone.</li>" +
-    "<li>If a record exists, confirm address, phone, and email.</li>" +
-    "<li>If needed, create a new record with complete contact info.</li>" +
-    "<li>Check that there are no duplicate records for this person.</li>" +
-    "</ol>",
-
-  adopt_main_2:
-    "<p><strong>Starting the adoption outcome:</strong></p>" +
-    "<ol>" +
-    "<li>Open the <strong>Person</strong> record for the adopter.</li>" +
-    "<li>Use the green plus menu to add a new <strong>Outcome</strong>.</li>" +
-    "<li>Choose <strong>Adoption</strong> and confirm you are on the correct person.</li>" +
-    "<li>Link the correct cat and check that Type, Subtype, and Status are correct.</li>" +
-    "</ol>" +
-    "<button class='help-detail' data-subhelp='adopt_outcome_start'>Show where to start Outcome</button>" +
-    "<button class='help-detail' data-subhelp='adopt_outcome_fields'>Show Outcome fields example</button>" +
-    "<button class='help-detail' data-subhelp='multi_outcome'>Multi-cat outcome example</button>",
-
-  adopt_main_3:
-    "<p><strong>Vouchers:</strong></p>" +
-    "<ol>" +
-    "<li>Confirm which voucher each cat should receive.</li>" +
-    "<li>On the cat record, create the voucher and link it to the adoption.</li>" +
-    "<li>Check that Type, Subtype, and Issued/Expiry dates are correct.</li>" +
-    "</ol>" +
-    "<button class='help-detail' data-subhelp='voucher_cat'>Show voucher example</button>",
-
-  adopt_main_4:
-    "<p><strong>Microchip and wellness option:</strong></p>" +
-    "<ol>" +
-    "<li>Confirm the microchip number is in the cat record.</li>" +
-    "<li>Explain how registration works and why it matters.</li>" +
-    "<li>Review the Petco or other wellness option and let the adopter choose.</li>" +
-    "<li>Record their choice and consent where required.</li>" +
-    "</ol>",
-
-  adopt_main_5:
-    "<p><strong>Folder ADA forms:</strong></p>" +
-    "<ol>" +
-    "<li>Pull the correct red folder for this cat or group of cats.</li>" +
-    "<li>Go through each ADA and explain any special notes or restrictions.</li>" +
-    "<li>Answer questions and confirm understanding.</li>" +
-    "<li>Have the adopter sign where required and check that every required signature is present.</li>" +
-    "</ol>",
-
-  adopt_main_6:
-    "<p><strong>Contract:</strong></p>" +
-    "<ol>" +
-    "<li>From the completed adoption outcome, open the contract print option.</li>" +
-    "<li>Print or display the contract for the adopter to sign.</li>" +
-    "<li>Follow your normal workflow for emailing the signed copy to the adopter.</li>" +
-    "<li>If this is a multi-cat adoption, generate and have them sign a separate contract for each cat.</li>" +
-    "</ol>" +
-    "<button class='help-detail' data-subhelp='contract_print'>Show where to print contract</button>",
-
-  adopt_main_7:
-    "<p><strong>Payment:</strong></p>" +
-    "<ol>" +
-    "<li>Fill out the payment slip with correct fees and discounts.</li>" +
-    "<li>Take payment using the approved method.</li>" +
-    "<li>Record payment in PetPoint under the correct adopter.</li>" +
-    "<li>Confirm the balance shows as paid.</li>" +
-    "</ol>",
-
-  adopt_after:
-    "<p><strong>Before they leave:</strong></p>" +
-    "<ul>" +
-    "<li>Put together the adoption bag.</li>" +
-    "<li>Add litter sample if you have it.</li>" +
-    "<li>Record kitten weight where needed.</li>" +
-    "<li>Scan the cat to confirm microchip.</li>" +
-    "<li>Offer the kennel card or printed photo if that is standard.</li>" +
-    "</ul>",
-
-  after_leave:
-    "<p><strong>Adopter memo on person:</strong></p>" +
-    "<ol>" +
-    "<li>Open the <strong>Person</strong> record for the adopter.</li>" +
-    "<li>Add a new memo with Type <strong>Adoption Outcome</strong> and Subtype <strong>Adopted</strong>.</li>" +
-    "<li>Note any key facts about the appointment that will help if they call later.</li>" +
-    "</ol>" +
-    "<button class='help-detail' data-subhelp='adopter_memo'>Show adopter memo example</button>",
-
-  after_memo_cat:
-    "<p><strong>Cat outcome memo:</strong></p>" +
-    "<ol>" +
-    "<li>Open the cat's record.</li>" +
-    "<li>Add a new memo with Type <strong>Outcome</strong> and Subtype <strong>Adoption</strong>.</li>" +
-    "<li>Add a short note such as where the cat went and if they will join other pets.</li>" +
-    "</ol>" +
-    "<button class='help-detail' data-subhelp='cat_memo'>Show cat memo example</button>",
-
-  after_association:
-    "<p><strong>Update association:</strong></p>" +
-    "<ol>" +
-    "<li>On the person record, open the Associations tab.</li>" +
-    "<li>Add a new association for <strong>Adopter</strong>.</li>" +
-    "<li>Use the same Subtype that was on their Potential Adopter association (for example, FKR Website).</li>" +
-    "</ol>" +
-    "<button class='help-detail' data-subhelp='association_new'>Show association example</button>",
-
-  after_upload_ada:
-    "<p><strong>Upload ADA forms:</strong></p>" +
-    "<p>Follow the naming instructions shown on this step. If anything is unclear, pause and ask staff for help before you save.</p>",
-
-  after_upload_consult:
-    "<p><strong>Upload consultation form:</strong></p>" +
-    "<p>Use the file name shown on this step, then upload it to the person's Memo/Files. If you need a visual of the screen, tap the button below.</p>" +
-    "<button class='help-detail' data-subhelp='consult_form'>Show consultation form example</button>",
-
-  after_receipt:
-    "<p><strong>Enter the receipt:</strong></p>" +
-    "<ol>" +
-    "<li>From the person record, use the green plus menu to create a new <strong>Receipt</strong>.</li>" +
-    "<li>On the Receipt - New screen, set the cash drawer and reference as your group uses them.</li>" +
-    "<li>Add the adoption item based on age and link the correct cat.</li>" +
-    "<li>When you click Pay, fill out the payment panel. Select Cash as the type if that is your standard, even when using Square, and note card details in the reference.</li>" +
-    "</ol>" +
-    "<button class='help-detail' data-subhelp='receipt_new'>How to create new receipt</button>" +
-    "<button class='help-detail' data-subhelp='receipt_screen'>Receipt - New screen example</button>" +
-    "<button class='help-detail' data-subhelp='multi_receipt'>Multi-cat receipt example</button>",
-
-  after_calendar:
-    "<p><strong>Update the calendar:</strong></p>" +
-    "<ol>" +
-    "<li>Open the original appointment on the calendar.</li>" +
-    "<li>Mark it as completed and note that the cat was adopted.</li>" +
-    "<li>Use your standard wording for no-show, reschedule, or completed adoption.</li>" +
-    "</ol>",
-
-  after_photo:
-    "<p><strong>Photo to Kim:</strong></p>" +
-    "<ol>" +
-    "<li>Choose a clear photo of adopter and cat.</li>" +
-    "<li>Text the photo to Kim using the rescue's standard number or thread.</li>" +
-    "<li>Confirm guidelines about faces, minors, and social media have been followed.</li>" +
-    "</ol>",
-
-  after_email:
-    "<p><strong>Outlook Adoption Email:</strong></p>" +
-    "<ol>" +
-    "<li>Open Outlook and click <em>New Message</em>.</li>" +
-    "<li>In <strong>BCC</strong>, enter <em>Adoption Notification</em>. Leave the To and CC lines blank.</li>" +
-    "<li>Subject line: type the name(s) of the cat(s) adopted.</li>" +
-    "<li>In the message body, list the cat name(s), note that <em>PP done</em>, and indicate if the photo was sent.</li>" +
-    "<li>At the end of the message, include the names of the adoption counselors working that day.</li>" +
-    "</ol>",
-
-  after_whiteboard:
-    "<p><strong>Whiteboards:</strong></p>" +
-    "<ol>" +
-    "<li>Update any room or lobby boards that track which cats are available or adopted.</li>" +
-    "<li>Erase the adopted cat from available lists.</li>" +
-    "<li>Add any new notes that are part of your standard process.</li>" +
-    "</ol>",
-
-  no_adopt:
-    "<p><strong>If no cat was adopted:</strong></p>" +
-    "<ol>" +
-    "<li>If something felt concerning or needs more review, add a <em>Future adopt - needs discussion</em> memo.</li>" +
-    "<li>If this was a walk in, scan and upload the consultation form to the person record.</li>" +
-    "<li>Update the calendar with the correct no adoption reason.</li>" +
-    "</ol>",
-
-  stop_staff:
-    "<p><strong>When you have a concern:</strong></p>" +
-    "<ol>" +
-    "<li>End the visit kindly and step out of the room.</li>" +
-    "<li>Find a staff member and explain what you saw or heard.</li>" +
-    "<li>Follow staff direction before you schedule or approve anything else with this adopter.</li>" +
-    "</ol>",
-
-  done:
-    "<p>This means you have finished all required tasks for this case.</p>" +
-    "<p>You can tap <strong>Start again</strong> when you are ready to begin the checklist for the next adopter.</p>"
-};
-
-// Sub help image content
-const subHelpContent = {
-  adopt_outcome_start: {
-    title: "Where to start Outcome on person",
-    html:
-      "<img src='1-create-new-outcome-on-person.png' alt='Add Outcome from green plus menu on person' class='help-image'>"
-  },
-  adopt_outcome_fields: {
-    title: "Outcome - New fields example",
-    html:
-      "<img src='2-outcome-form-filled.png' alt='Outcome New form filled example' class='help-image'>"
-  },
-  multi_outcome: {
-    title: "Multi-cat Outcome on person",
-    html:
-      "<img src='1-multiple-cat-outcome-on-person.png' alt='Multiple cats linked on Outcome on person record' class='help-image'>"
-  },
-  voucher_cat: {
-    title: "Voucher on cat example",
-    html:
-      "<img src='3-voucher-on-cat.png' alt='Voucher Automatic screen on cat' class='help-image'>"
-  },
-  contract_print: {
-    title: "Where to print contract",
-    html:
-      "<img src='4-create-contract-on-person-outcome.png' alt='Contract print option on adoption outcome' class='help-image'>"
-  },
-  adopter_memo: {
-    title: "Adopter memo on person",
-    html:
-      "<img src='5-Adopter-memo.png' alt='Adoption Outcome memo on person' class='help-image'>"
-  },
-  cat_memo: {
-    title: "Cat outcome memo",
-    html:
-      "<img src='7-memo-on-pet.png' alt='Outcome memo on pet' class='help-image'>"
-  },
-  association_new: {
-    title: "Association - new example",
-    html:
-      "<img src='6-Association.png' alt='Association New screen with instructions' class='help-image'>"
-  },
-  receipt_new: {
-    title: "How to create new receipt",
-    html:
-      "<img src='8-new-receipt-on-person.png' alt='New receipt from person record' class='help-image'>"
-  },
-  receipt_screen: {
-    title: "Receipt - New screen example",
-    html:
-      "<img src='9-receipt-form.png' alt='Receipt form and payment panel' class='help-image'>"
-  },
-  multi_receipt: {
-    title: "Multi-cat receipt example",
-    html:
-      "<img src='8-multi-cat-receipt-on-person.png' alt='Multi-cat receipt from person record' class='help-image'>"
-  },
-  consult_form: {
-    title: "Consultation form upload example",
-    html:
-      "<img src='10-Consultation-Form.png' alt='Consultation form uploaded on person record' class='help-image'>"
-  }
-};
-
-let currentHelpStep = null;
-
-/* Navigation helpers used by inline onclick handlers */
-
-function setInteraction(type) {
-  interactionType = type;
-  if (type === "appointment") {
-    goTo("prep_appointment");
-  } else {
-    goTo("prep_walkin");
-  }
+:root {
+  --fkr-red: #C62828;
+  --bg-light: #f2f2f2;
+  --text-main: #222222;
+  --card-bg: #ffffff;
+  --muted: #444444;
 }
 
-function goToAfterReceiptNext() {
-  if (interactionType === "walkin") {
-    goTo("after_photo");
-  } else {
-    goTo("after_calendar");
-  }
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-function jumpToStep(id) {
-  if (!id) return;
-  goTo(id);
-  const select = document.getElementById("step-jump");
-  if (select) select.value = "";
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
-function showStep(id) {
-  if (!steps.length) return;
-  steps.forEach(step => {
-    step.classList.toggle("active", step.dataset.stepId === id);
-  });
-  const index = orderedStepIds.indexOf(id);
-  if (index >= 0 && progressLabel && progressBar) {
-    const stepNum = index + 1;
-    const total = orderedStepIds.length;
-    progressLabel.textContent = "Step " + stepNum + " of " + total;
-    const pct = Math.round((stepNum - 1) / (total - 1) * 100);
-    progressBar.style.width = pct + "%";
-  }
-  window.scrollTo({ top: 0, behavior: "smooth" });
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg-light);
+  color: var(--text-main);
+  font-size: clamp(22px, 4vh, 32px);
 }
 
-function goTo(id, reset = false) {
-  if (reset) {
-    historyStack = [id];
-  } else {
-    const last = historyStack[historyStack.length - 1];
-    if (last !== id) {
-      historyStack.push(id);
-    }
-  }
-  showStep(id);
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-function goBack() {
-  if (historyStack.length > 1) {
-    historyStack.pop();
-    showStep(historyStack[historyStack.length - 1]);
-  } else {
-    showStep("start");
-  }
+header {
+  background: var(--fkr-red);
+  color: #ffffff;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 1.6rem;
+  margin: 0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+header p {
+  margin: 8px 0 0;
+  font-size: 1.05rem;
+  opacity: 0.9;
+}
+
+main {
+  flex: 1;
+  padding: 8px 10px 0;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 18px;
+  padding: 22px 18px 20px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.18);
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-title {
+  font-size: 1.55rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.step-subtitle {
+  font-size: 1.15rem;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.step-subtitle p {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+.step-sublist {
+  margin: 0;
+  padding-left: 1.4em;
+  font-size: 1rem;
+}
+
+.step-sublist li {
+  margin-bottom: 0.3em;
+}
+
+.highlight {
+  background: #fff8a6;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+.btn-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  margin-bottom: 4px;
+}
+
+button {
+  border-radius: 999px;
+  border: none;
+  padding: 18px 22px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+button.primary {
+  background: var(--fkr-red);
+  color: #ffffff;
+}
+
+button.secondary {
+  background: #ffffff;
+  color: var(--fkr-red);
+  border: 2px solid var(--fkr-red);
+}
+
+button.outline {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(0,0,0,0.35);
+  font-size: 1.1rem;
+  padding: 13px 18px;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #ffe4e4;
+  color: var(--fkr-red);
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+.pill span.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--fkr-red);
+}
+
+.step {
+  display: none;
+}
+
+.step.active {
+  display: block;
+}
+
+ul.checklist {
+  list-style: none;
+  padding-left: 0;
+  margin: 10px 0 0;
+  font-size: 1.15rem;
+}
+
+ul.checklist li {
+  margin-bottom: 9px;
+  padding-left: 28px;
+  position: relative;
+}
+
+ul.checklist li::before {
+  content: "•";
+  position: absolute;
+  left: 9px;
+  color: var(--fkr-red);
+}
+
+footer {
+  text-align: center;
+  padding: 12px 6px 14px;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.progress {
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar-wrap {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: #f0d4d4;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 8px;
+  width: 0%;
+  background: #ffffff;
+  border-radius: 999px;
+  transition: width 0.25s ease-out;
+}
+
+.step-jump-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.step-jump-row button {
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  width: auto;
+}
+
+.step-jump-row select {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
 }
 
 /* Help overlay */
 
-function showHelp(stepId) {
-  currentHelpStep = stepId;
-  const overlay = document.getElementById("help-overlay");
-  const titleEl = document.getElementById("help-title");
-  const textEl = document.getElementById("help-text");
-  const backBtn = document.getElementById("help-back-btn");
-
-  if (!overlay || !titleEl || !textEl || !backBtn) return;
-
-  const defaultTitle = "Step help";
-  const defaultText =
-    "If you are unsure what to do on this step, pause and ask a staff member for guidance.";
-
-  let title = defaultTitle;
-  let text = helpContent[stepId] || defaultText;
-
-  const stepEl = document.querySelector(
-    '.step[data-step-id="' + stepId + '"] .step-title'
-  );
-  if (stepEl) {
-    title = stepEl.textContent;
-  }
-
-  titleEl.textContent = title;
-  textEl.innerHTML = text;
-
-  backBtn.style.display = "none";
-  overlay.classList.add("active");
-  overlay.setAttribute("aria-hidden", "false");
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 10;
 }
 
-function showSubHelp(subId) {
-  const overlay = document.getElementById("help-overlay");
-  const titleEl = document.getElementById("help-title");
-  const textEl = document.getElementById("help-text");
-  const backBtn = document.getElementById("help-back-btn");
-
-  if (!overlay || !titleEl || !textEl || !backBtn) return;
-
-  const data = subHelpContent[subId];
-  if (!data) return;
-
-  titleEl.textContent = data.title || "More details";
-  textEl.innerHTML = data.html || "";
-  backBtn.style.display = currentHelpStep ? "inline-flex" : "none";
-
-  overlay.classList.add("active");
-  overlay.setAttribute("aria-hidden", "false");
+.help-overlay.active {
+  display: flex;
 }
 
-function backToMainHelp() {
-  if (currentHelpStep) {
-    showHelp(currentHelpStep);
-  }
+.help-card {
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 22px 20px 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  font-size: 1.15rem;
+  overflow-y: auto;
 }
 
-function hideHelp() {
-  const overlay = document.getElementById("help-overlay");
-  if (!overlay) return;
-  overlay.classList.remove("active");
-  overlay.setAttribute("aria-hidden", "true");
+.help-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 1.35rem;
 }
 
-/* DOM wiring */
+.help-text {
+  font-size: 1.1rem;
+  color: #333333;
+  margin-bottom: 12px;
+  white-space: normal;
+}
 
-document.addEventListener("DOMContentLoaded", function () {
-  steps = Array.from(document.querySelectorAll(".step"));
-  progressLabel = document.getElementById("progress-label");
-  progressBar = document.getElementById("progress-bar");
+.help-text p {
+  margin-top: 0;
+}
 
-  // Global delegation for help pills and images
-  document.addEventListener("click", function (e) {
-    const pill = e.target.closest("[data-subhelp]");
-    if (pill) {
-      const subId = pill.getAttribute("data-subhelp");
-      if (subId) {
-        e.preventDefault();
-        showSubHelp(subId);
-      }
-      return;
-    }
+.help-text ol,
+.help-text ul {
+  padding-left: 1.4em;
+  margin: 0.4em 0 0.4em;
+}
 
-    const img = e.target.closest(".help-image");
-    if (img) {
-      e.preventDefault();
-      window.open(img.src, "_blank");
-    }
-  });
+.help-close-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
 
-  showStep("start");
-});
+.help-close-row button {
+  font-size: 1.05rem;
+  padding: 10px 20px;
+  width: auto;
+}
+
+.help-image-wrap {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.help-image {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 4px;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.help-image.zoomed {
+  transform: scale(1.4);
+  transform-origin: center center;
+}
+
+.zoom-btn {
+  margin-top: 8px;
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--fkr-red);
+  background: #fff7f7;
+  color: var(--fkr-red);
+  cursor: pointer;
+}
+
+.zoom-btn:active {
+  transform: scale(0.97);
+}
+
+.help-detail {
+  margin-top: 10px;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--fkr-red);
+  background: #fff7f7;
+  color: var(--fkr-red);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.help-detail:active {
+  transform: scale(0.97);
+}
+
+@media (max-width: 380px) {
+  body { font-size: clamp(20px, 4.2vh, 28px); }
+  header h1 { font-size: 1.5rem; }
+  .step-title { font-size: 1.5rem; }
+  button { font-size: 1.2rem; }
+  .step-jump-row button { font-size: 0.9rem; padding: 8px 10px; }
+  .step-jump-row select { font-size: 0.9rem; }
+}
