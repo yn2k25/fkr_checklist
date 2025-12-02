@@ -5,6 +5,7 @@
   <title>FKR Adoption Checklist</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="stylesheet" href="styles.css" />
+  <script defer src="script.js"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -141,14 +142,14 @@
           </div>
         </div>
 
-        <!-- ADOPTION MAIN PART 2 - OUTCOME STARTED -->
+        <!-- ADOPTION MAIN PART 2 -->
         <div class="step" data-step-id="adopt_main_2">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Has Outcome to Adoption been started?</div>
           <div class="step-subtitle">The Person record should show an active Adoption outcome.</div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_main_3')">Yes - continue</button>
-            <button class="secondary" onclick="alert('Open the person record, start an Outcome to Adoption, then tap Yes')">Not yet</button>
+            <button class="secondary" onclick="alert('Open the cat record, start an Outcome, and choose Adoption, then tap Yes')">Not yet</button>
             <button class="outline" onclick="showHelp('adopt_main_2')">Show me how</button>
             <button class="outline" onclick="goBack()">Back</button>
           </div>
@@ -184,7 +185,7 @@
         <div class="step" data-step-id="adopt_main_5">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Have folder ADA forms been reviewed and signed?</div>
-          <div class="step-subtitle">All required ADA pages in the red folder should be signed. Reminder: follow the ADA naming rules in Show me how.</div>
+          <div class="step-subtitle">All required ADA pages in the red folder should be signed.</div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_main_6')">Yes - continue</button>
             <button class="secondary" onclick="alert('Go through each ADA in the red folder, collect signatures, then tap Yes')">Not yet</button>
@@ -193,7 +194,7 @@
           </div>
         </div>
 
-        <!-- ADOPTION MAIN PART 6 - CONTRACT -->
+        <!-- ADOPTION MAIN PART 6 -->
         <div class="step" data-step-id="adopt_main_6">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Has the contract been signed and emailed?</div>
@@ -281,7 +282,7 @@
         <div class="step" data-step-id="after_upload_ada">
           <div class="pill"><span class="dot"></span><span>After adopter leaves</span></div>
           <div class="step-title">Have ADA forms been uploaded to the cat record?</div>
-          <div class="step-subtitle">Scan or upload all signed ADA pages to the animal record. Reminder: use the correct ADA file name and Type/Subtype values.</div>
+          <div class="step-subtitle">Scan and upload all signed ADA pages to the animal record.</div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('after_upload_consult')">Yes - continue</button>
             <button class="secondary" onclick="alert('Upload the ADA forms to the cat record, then tap Yes')">Not yet</button>
@@ -373,7 +374,6 @@
           <div class="pill"><span class="dot"></span><span>No adoption</span></div>
           <div class="step-title">Wrap up - no adoption</div>
           <ul class="checklist">
-            <li>Create the person if they do not already exist in PetPoint</li>
             <li>Add Future adopt - needs discussion memo if needed</li>
             <li>Upload consultation form to person record</li>
             <li>Update calendar with correct reason</li>
@@ -429,15 +429,5 @@
       </div>
     </div>
   </div>
-
-  <!-- Image zoom overlay -->
-  <div id="image-zoom-overlay" class="image-zoom-overlay" aria-hidden="true">
-    <div class="image-zoom-inner">
-      <button class="image-zoom-close" onclick="closeZoom()">Close</button>
-      <img id="zoomed-image" src="" alt="">
-    </div>
-  </div>
-
-  <script src="script.js" defer></script>
 </body>
 </html>
