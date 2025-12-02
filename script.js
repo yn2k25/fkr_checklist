@@ -1,8 +1,7 @@
-// Navigation state
-let historyStack = ["start"];
-let steps = [];
-let progressLabel;
-let progressBar;
+const historyStack = ["start"];
+const steps = Array.from(document.querySelectorAll(".step"));
+const progressLabel = document.getElementById("progress-label");
+const progressBar = document.getElementById("progress-bar");
 
 const orderedStepIds = [
   "start",
@@ -35,7 +34,30 @@ const orderedStepIds = [
 
 let interactionType = null;
 
-// Main help text
+function setInteraction(type) {
+  interactionType = type;
+  if (type === "appointment") {
+    goTo("prep_appointment");
+  } else {
+    goTo("prep_walkin");
+  }
+}
+
+function goToAfterReceiptNext() {
+  if (interactionType === "walkin") {
+    goTo("after_photo");
+  } else {
+    goTo("after_calendar");
+  }
+}
+
+function jumpToStep(id) {
+  if (!id) return;
+  goTo(id);
+  const select = document.getElementById("step-jump");
+  if (select) select.value = "";
+}
+
 const helpContent = {
   start:
     "Choose <strong>Scheduled appointment</strong> if this person was on the calendar.<br><br>" +
@@ -77,7 +99,9 @@ const helpContent = {
     "<li>If a record exists, confirm address, phone, and email.</li>" +
     "<li>If needed, create a new record with complete contact info.</li>" +
     "<li>Check that there are no duplicate records for this person.</li>" +
-    "</ol>",
+    "<li>If there is no person record yet, create the person before you continue so memos and files save to the right record.</li>" +
+    "</ol>" +
+    "<button class='help-detail' data-subhelp='create_person'>Show how to create a person</button>",
 
   adopt_main_2:
     "<p><strong>Starting the adoption outcome:</strong></p>" +
@@ -89,7 +113,7 @@ const helpContent = {
     "</ol>" +
     "<button class='help-detail' data-subhelp='adopt_outcome_start'>Show where to start Outcome</button>" +
     "<button class='help-detail' data-subhelp='adopt_outcome_fields'>Show Outcome fields example</button>" +
-    "<button class='help-detail' data-subhelp='multi_outcome'>Multi-cat outcome example</button>",
+    "<button class='help-detail' data-subhelp='multi_outcome'>Multiple cats on Outcome</button>",
 
   adopt_main_3:
     "<p><strong>Vouchers:</strong></p>" +
@@ -124,7 +148,7 @@ const helpContent = {
     "<li>From the completed adoption outcome, open the contract print option.</li>" +
     "<li>Print or display the contract for the adopter to sign.</li>" +
     "<li>Follow your normal workflow for emailing the signed copy to the adopter.</li>" +
-    "<li>If this is a multi-cat adoption, generate and have them sign a separate contract for each cat.</li>" +
+    "<li>For multi-cat adoptions, generate and sign a contract for each cat so every cat has a matching document.</li>" +
     "</ol>" +
     "<button class='help-detail' data-subhelp='contract_print'>Show where to print contract</button>",
 
@@ -175,18 +199,16 @@ const helpContent = {
     "<button class='help-detail' data-subhelp='association_new'>Show association example</button>",
 
   after_upload_ada:
-    "<p><strong>Upload ADA forms:</strong></p>" +
-    "<p>Follow the naming instructions shown on this step. If anything is unclear, pause and ask staff for help before you save.</p>",
+    "<p>Use this step to double check that ADA files are named and attached correctly. The details you see on the card are the same rules used here.</p>",
 
-  // UPDATED: help overlay for consultation form with pill
   after_upload_consult:
     "<p><strong>Upload consultation form:</strong></p>" +
     "<ol>" +
-    "<li>Scan or photograph the consult form.</li>" +
-    "<li>On the person record, upload the file to their documents or memos/files area.</li>" +
+    "<li>Scan or photograph the consult form and save it as shown on the card.</li>" +
+    "<li>On the person record, upload the file to their memos or files area.</li>" +
     "<li>Make sure the date and notes are visible.</li>" +
     "</ol>" +
-    "<button class='help-detail' data-subhelp='consult_form'>Consultation form upload screen</button>",
+    "<button class='help-detail' data-subhelp='consult_upload'>Consultation form upload screen</button>",
 
   after_receipt:
     "<p><strong>Enter the receipt:</strong></p>" +
@@ -198,7 +220,7 @@ const helpContent = {
     "</ol>" +
     "<button class='help-detail' data-subhelp='receipt_new'>How to create new receipt</button>" +
     "<button class='help-detail' data-subhelp='receipt_screen'>Receipt - New screen example</button>" +
-    "<button class='help-detail' data-subhelp='multi_receipt'>Multi-cat receipt example</button>",
+    "<button class='help-detail' data-subhelp='multi_receipt'>Multiple cats on Receipt</button>",
 
   after_calendar:
     "<p><strong>Update the calendar:</strong></p>" +
@@ -237,10 +259,12 @@ const helpContent = {
   no_adopt:
     "<p><strong>If no cat was adopted:</strong></p>" +
     "<ol>" +
+    "<li>If they are not already in PetPoint, create the person record so you can add memos and files.</li>" +
     "<li>If something felt concerning or needs more review, add a <em>Future adopt - needs discussion</em> memo.</li>" +
-    "<li>If this was a walk in, scan and upload the consultation form to the person record.</li>" +
+    "<li>Scan and upload the consultation form to the person record.</li>" +
     "<li>Update the calendar with the correct no adoption reason.</li>" +
-    "</ol>",
+    "</ol>" +
+    "<button class='help-detail' data-subhelp='create_person'>Show how to create a person</button>",
 
   stop_staff:
     "<p><strong>When you have a concern:</strong></p>" +
@@ -255,117 +279,138 @@ const helpContent = {
     "<p>You can tap <strong>Start again</strong> when you are ready to begin the checklist for the next adopter.</p>"
 };
 
-// Sub help image content
 const subHelpContent = {
   adopt_outcome_start: {
     title: "Where to start Outcome on person",
     html:
-      "<img src='1-create-new-outcome-on-person.png' alt='Add Outcome from green plus menu on person' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='1-create-new-outcome-on-person.png' alt='Add Outcome from green plus menu on person' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
   adopt_outcome_fields: {
     title: "Outcome - New fields example",
     html:
-      "<img src='2-outcome-form-filled.png' alt='Outcome New form filled example' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='2-outcome-form-filled.png' alt='Outcome New form filled example' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
   multi_outcome: {
-    title: "Multi-cat Outcome on person",
+    title: "Multiple cats on Outcome",
     html:
-      "<img src='1-multiple-cat-outcome-on-person.png' alt='Multiple cats linked on Outcome on person record' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='1-multiple-cat-outcome-on-person.png' alt='Multiple cats on Outcome on person' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
   voucher_cat: {
     title: "Voucher on cat example",
     html:
-      "<img src='3-voucher-on-cat.png' alt='Voucher Automatic screen on cat' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='3-voucher-on-cat.png' alt='Voucher Automatic screen on cat' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
   contract_print: {
     title: "Where to print contract",
     html:
-      "<img src='4-create-contract-on-person-outcome.png' alt='Contract print option on adoption outcome' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='4-create-contract-on-person-outcome.png' alt='Contract print option on adoption outcome' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
   adopter_memo: {
     title: "Adopter memo on person",
     html:
-      "<img src='5-Adopter-memo.png' alt='Adoption Outcome memo on person' class='help-image'>"
-  },
-  cat_memo: {
-    title: "Cat outcome memo",
-    html:
-      "<img src='7-memo-on-pet.png' alt='Outcome memo on pet' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='5-Adopter-memo.png' alt='Adoption Outcome memo on person' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
   association_new: {
     title: "Association - new example",
     html:
-      "<img src='6-Association.png' alt='Association New screen with instructions' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='6-Association.png' alt='Association New screen with instructions' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
+  },
+  cat_memo: {
+    title: "Cat outcome memo",
+    html:
+      "<div class='help-image-wrap'>" +
+      "<img src='7-memo-on-pet.png' alt='Outcome memo on pet' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
   receipt_new: {
     title: "How to create new receipt",
     html:
-      "<img src='8-new-receipt-on-person.png' alt='New receipt from person record' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='8-new-receipt-on-person.png' alt='New receipt from person record' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
   receipt_screen: {
     title: "Receipt - New screen example",
     html:
-      "<img src='9-receipt-form.png' alt='Receipt form and payment panel' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='9-receipt-form.png' alt='Receipt form and payment panel' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
   multi_receipt: {
-    title: "Multi-cat receipt example",
+    title: "Multiple cats on Receipt",
     html:
-      "<img src='8-multi-cat-receipt-on-person.png' alt='Multi-cat receipt from person record' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='8-multi-cat-receipt-on-person.png' alt='Multiple cats on Receipt on person' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
   },
-  consult_form: {
-    title: "Consultation form upload example",
+  consult_upload: {
+    title: "Consultation form upload screen",
     html:
-      "<img src='10-Consultation-Form.png' alt='Consultation form uploaded on person record' class='help-image'>"
+      "<div class='help-image-wrap'>" +
+      "<img src='10-Consultation-Form.png' alt='Consultation form upload screen' class='help-image' />" +
+      "<button class='zoom-btn' data-zoom-target='image'>Zoom image</button>" +
+      "</div>"
+  },
+  create_person: {
+    title: "Create a person in PetPoint",
+    html:
+      "<p>To create a new person record:</p>" +
+      "<ol>" +
+      "<li>From the main person search, click the option to add a new person.</li>" +
+      "<li>Enter full name, address, phone, and email if available.</li>" +
+      "<li>Save the record, then use this person for the consultation, memos, and outcomes.</li>" +
+      "</ol>"
   }
 };
 
 let currentHelpStep = null;
 
-/* Navigation helpers used by inline onclick handlers */
-
-function setInteraction(type) {
-  interactionType = type;
-  if (type === "appointment") {
-    goTo("prep_appointment");
-  } else {
-    goTo("prep_walkin");
-  }
-}
-
-function goToAfterReceiptNext() {
-  if (interactionType === "walkin") {
-    goTo("after_photo");
-  } else {
-    goTo("after_calendar");
-  }
-}
-
-function jumpToStep(id) {
-  if (!id) return;
-  goTo(id);
-  const select = document.getElementById("step-jump");
-  if (select) select.value = "";
-}
-
 function showStep(id) {
-  if (!steps.length) return;
   steps.forEach(step => {
     step.classList.toggle("active", step.dataset.stepId === id);
   });
   const index = orderedStepIds.indexOf(id);
-  if (index >= 0 && progressLabel && progressBar) {
+  if (index >= 0) {
     const stepNum = index + 1;
     const total = orderedStepIds.length;
     progressLabel.textContent = "Step " + stepNum + " of " + total;
     const pct = Math.round((stepNum - 1) / (total - 1) * 100);
     progressBar.style.width = pct + "%";
+  } else {
+    progressBar.style.width = "0%";
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function goTo(id, reset = false) {
   if (reset) {
-    historyStack = [id];
+    historyStack.length = 0;
+    historyStack.push(id);
   } else {
     const last = historyStack[historyStack.length - 1];
     if (last !== id) {
@@ -384,8 +429,6 @@ function goBack() {
   }
 }
 
-/* Help overlay */
-
 function showHelp(stepId) {
   currentHelpStep = stepId;
   const overlay = document.getElementById("help-overlay");
@@ -393,18 +436,13 @@ function showHelp(stepId) {
   const textEl = document.getElementById("help-text");
   const backBtn = document.getElementById("help-back-btn");
 
-  if (!overlay || !titleEl || !textEl || !backBtn) return;
-
   const defaultTitle = "Step help";
-  const defaultText =
-    "If you are unsure what to do on this step, pause and ask a staff member for guidance.";
+  const defaultText = "If you are unsure what to do on this step, pause and ask a staff member for guidance.";
 
   let title = defaultTitle;
   let text = helpContent[stepId] || defaultText;
 
-  const stepEl = document.querySelector(
-    '.step[data-step-id="' + stepId + '"] .step-title'
-  );
+  const stepEl = document.querySelector('.step[data-step-id="' + stepId + '"] .step-title');
   if (stepEl) {
     title = stepEl.textContent;
   }
@@ -422,8 +460,6 @@ function showSubHelp(subId) {
   const titleEl = document.getElementById("help-title");
   const textEl = document.getElementById("help-text");
   const backBtn = document.getElementById("help-back-btn");
-
-  if (!overlay || !titleEl || !textEl || !backBtn) return;
 
   const data = subHelpContent[subId];
   if (!data) return;
@@ -444,36 +480,29 @@ function backToMainHelp() {
 
 function hideHelp() {
   const overlay = document.getElementById("help-overlay");
-  if (!overlay) return;
   overlay.classList.remove("active");
   overlay.setAttribute("aria-hidden", "true");
 }
 
-/* DOM wiring */
+// Global click handler for help pills and zoom buttons
+document.addEventListener("click", function (e) {
+  const subBtn = e.target.closest("[data-subhelp]");
+  if (subBtn) {
+    const subId = subBtn.getAttribute("data-subhelp");
+    showSubHelp(subId);
+    return;
+  }
 
-document.addEventListener("DOMContentLoaded", function () {
-  steps = Array.from(document.querySelectorAll(".step"));
-  progressLabel = document.getElementById("progress-label");
-  progressBar = document.getElementById("progress-bar");
-
-  // Global delegation for help pills and images
-  document.addEventListener("click", function (e) {
-    const pill = e.target.closest("[data-subhelp]");
-    if (pill) {
-      const subId = pill.getAttribute("data-subhelp");
-      if (subId) {
-        e.preventDefault();
-        showSubHelp(subId);
-      }
-      return;
-    }
-
-    const img = e.target.closest(".help-image");
-    if (img) {
-      e.preventDefault();
-      window.open(img.src, "_blank");
-    }
-  });
-
-  showStep("start");
+  const zoomBtn = e.target.closest(".zoom-btn");
+  if (zoomBtn) {
+    const card = zoomBtn.closest(".help-card");
+    if (!card) return;
+    const img = card.querySelector(".help-image");
+    if (!img) return;
+    img.classList.toggle("zoomed");
+    zoomBtn.textContent = img.classList.contains("zoomed") ? "Reset size" : "Zoom image";
+    return;
+  }
 });
+
+showStep("start");
