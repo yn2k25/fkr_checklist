@@ -35,7 +35,7 @@ const orderedStepIds = [
 
 let interactionType = null;
 
-// Main help text for each step
+// Main help text
 const helpContent = {
   start:
     "Choose <strong>Scheduled appointment</strong> if this person was on the calendar.<br><br>" +
@@ -175,22 +175,8 @@ const helpContent = {
     "<button class='help-detail' data-subhelp='association_new'>Show association example</button>",
 
   after_upload_ada:
-    "<p><strong>Upload ADA forms and use correct naming:</strong></p>" +
-    "<p>Scan and upload all signed ADA pages to the animal record.</p>" +
-    "<ol>" +
-      "<li>Scanned file in Downloads folder: " +
-        "<span class=\"highlight\">\"Adoption Disclosure Agreement - kitty name\"</span>.</li>" +
-      "<li>On each cat's record, go to <strong>Memo/Files</strong> to upload the file:" +
-        "<ul>" +
-          "<li>For the file Name, use " +
-            "<span class=\"highlight\">\"Signed Kitten ADA -kitty name\"</span> and/or " +
-            "<span class=\"highlight\">\"Signed Medical ADA -kitty name\"</span> as appropriate.</li>" +
-          "<li>Set Type to " +
-            "<span class=\"highlight\">\"Adoption Document\"</span> and Subtype to " +
-            "<span class=\"highlight\">\"Adoption Disclosure Agreement - ADA\"</span>.</li>" +
-        "</ul>" +
-      "</li>" +
-    "</ol>",
+    "<p><strong>Upload ADA forms:</strong></p>" +
+    "<p>Follow the naming instructions shown on this step. If anything is unclear, pause and ask staff for help before you save.</p>",
 
   after_upload_consult:
     "<p><strong>Upload consultation form:</strong></p>" +
@@ -391,7 +377,7 @@ function goBack() {
   }
 }
 
-/* Help overlay functions */
+/* Help overlay */
 
 function showHelp(stepId) {
   currentHelpStep = stepId;
@@ -463,7 +449,7 @@ document.addEventListener("DOMContentLoaded", function () {
   progressLabel = document.getElementById("progress-label");
   progressBar = document.getElementById("progress-bar");
 
-  // Global delegation for help pills
+  // Global delegation for help pills and images
   document.addEventListener("click", function (e) {
     const pill = e.target.closest("[data-subhelp]");
     if (pill) {
@@ -475,7 +461,6 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Make screenshots clickable to open larger
     const img = e.target.closest(".help-image");
     if (img) {
       e.preventDefault();
