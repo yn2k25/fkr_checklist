@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>FKR Adoption Checklist</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <link rel="stylesheet" href="fkr_adoption_checklist.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -141,14 +141,14 @@
           </div>
         </div>
 
-        <!-- ADOPTION MAIN PART 2 -->
+        <!-- ADOPTION MAIN PART 2 - OUTCOME STARTED -->
         <div class="step" data-step-id="adopt_main_2">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Has Outcome to Adoption been started?</div>
-          <div class="step-subtitle">The cat record should show an active Adoption outcome.</div>
+          <div class="step-subtitle">The Person record should show an active Adoption outcome.</div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_main_3')">Yes - continue</button>
-            <button class="secondary" onclick="alert('Open the cat record, start an Outcome, and choose Adoption, then tap Yes')">Not yet</button>
+            <button class="secondary" onclick="alert('Open the person record, start an Outcome to Adoption, then tap Yes')">Not yet</button>
             <button class="outline" onclick="showHelp('adopt_main_2')">Show me how</button>
             <button class="outline" onclick="goBack()">Back</button>
           </div>
@@ -193,15 +193,11 @@
           </div>
         </div>
 
-        <!-- ADOPTION MAIN PART 6 -->
+        <!-- ADOPTION MAIN PART 6 - CONTRACT -->
         <div class="step" data-step-id="adopt_main_6">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Has the contract been signed and emailed?</div>
-          <div class="step-subtitle">
-            The adopter should have a copy of the signed contract.
-            <br><br>
-            <strong>Multi-cat?</strong> Generate and have a separate contract signed for <strong>each cat</strong> in the adoption.
-          </div>
+          <div class="step-subtitle">The adopter should have a copy of the signed contract.</div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_main_7')">Yes - continue</button>
             <button class="secondary" onclick="alert('Have the adopter sign the contract and email them a copy, then tap Yes')">Not yet</button>
@@ -377,6 +373,7 @@
           <div class="pill"><span class="dot"></span><span>No adoption</span></div>
           <div class="step-title">Wrap up - no adoption</div>
           <ul class="checklist">
+            <li>Create the person if they do not already exist in PetPoint</li>
             <li>Add Future adopt - needs discussion memo if needed</li>
             <li>Upload consultation form to person record</li>
             <li>Update calendar with correct reason</li>
@@ -433,14 +430,14 @@
     </div>
   </div>
 
-  <!-- Image lightbox for zoomed screenshots -->
-  <div id="image-lightbox" class="image-lightbox" aria-hidden="true">
-    <div class="image-lightbox-content">
-      <button class="image-lightbox-close" onclick="closeImageLightbox()">Close</button>
-      <img id="lightbox-image" src="" alt="Zoomed help screenshot">
+  <!-- Image zoom overlay -->
+  <div id="image-zoom-overlay" class="image-zoom-overlay" aria-hidden="true">
+    <div class="image-zoom-inner">
+      <button class="image-zoom-close" onclick="closeZoom()">Close</button>
+      <img id="zoomed-image" src="" alt="">
     </div>
   </div>
 
-  <script src="fkr_adoption_checklist.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
