@@ -1,36 +1,36 @@
 // Navigation state
-let historyStack = ['start'];
+let historyStack = ["start"];
 let steps = [];
 let progressLabel;
 let progressBar;
 
 const orderedStepIds = [
-  'start',
-  'prep_appointment',
-  'prep_walkin',
-  'meet',
-  'decision',
-  'adopt_main_1',
-  'adopt_main_2',
-  'adopt_main_3',
-  'adopt_main_4',
-  'adopt_main_5',
-  'adopt_main_6',
-  'adopt_main_7',
-  'adopt_after',
-  'after_leave',
-  'after_memo_cat',
-  'after_association',
-  'after_upload_ada',
-  'after_upload_consult',
-  'after_receipt',
-  'after_calendar',
-  'after_photo',
-  'after_email',
-  'after_whiteboard',
-  'no_adopt',
-  'stop_staff',
-  'done'
+  "start",
+  "prep_appointment",
+  "prep_walkin",
+  "meet",
+  "decision",
+  "adopt_main_1",
+  "adopt_main_2",
+  "adopt_main_3",
+  "adopt_main_4",
+  "adopt_main_5",
+  "adopt_main_6",
+  "adopt_main_7",
+  "adopt_after",
+  "after_leave",
+  "after_memo_cat",
+  "after_association",
+  "after_upload_ada",
+  "after_upload_consult",
+  "after_receipt",
+  "after_calendar",
+  "after_photo",
+  "after_email",
+  "after_whiteboard",
+  "no_adopt",
+  "stop_staff",
+  "done"
 ];
 
 let interactionType = null;
@@ -328,36 +328,36 @@ const subHelpContent = {
 
 let currentHelpStep = null;
 
-/* Navigation helpers, used by inline onclick handlers */
+/* Navigation helpers used by inline onclick handlers */
 
 function setInteraction(type) {
   interactionType = type;
-  if (type === 'appointment') {
-    goTo('prep_appointment');
+  if (type === "appointment") {
+    goTo("prep_appointment");
   } else {
-    goTo('prep_walkin');
+    goTo("prep_walkin");
   }
 }
 
 function goToAfterReceiptNext() {
-  if (interactionType === 'walkin') {
-    goTo('after_photo');
+  if (interactionType === "walkin") {
+    goTo("after_photo");
   } else {
-    goTo('after_calendar');
+    goTo("after_calendar");
   }
 }
 
 function jumpToStep(id) {
   if (!id) return;
   goTo(id);
-  const select = document.getElementById('step-jump');
-  if (select) select.value = '';
+  const select = document.getElementById("step-jump");
+  if (select) select.value = "";
 }
 
 function showStep(id) {
   if (!steps.length) return;
   steps.forEach(step => {
-    step.classList.toggle('active', step.dataset.stepId === id);
+    step.classList.toggle("active", step.dataset.stepId === id);
   });
   const index = orderedStepIds.indexOf(id);
   if (index >= 0 && progressLabel && progressBar) {
@@ -391,7 +391,7 @@ function goBack() {
   }
 }
 
-/* Help overlay */
+/* Help overlay functions */
 
 function showHelp(stepId) {
   currentHelpStep = stepId;
@@ -403,12 +403,15 @@ function showHelp(stepId) {
   if (!overlay || !titleEl || !textEl || !backBtn) return;
 
   const defaultTitle = "Step help";
-  const defaultText = "If you are unsure what to do on this step, pause and ask a staff member for guidance.";
+  const defaultText =
+    "If you are unsure what to do on this step, pause and ask a staff member for guidance.";
 
   let title = defaultTitle;
   let text = helpContent[stepId] || defaultText;
 
-  const stepEl = document.querySelector('.step[data-step-id="' + stepId + '"] .step-title');
+  const stepEl = document.querySelector(
+    '.step[data-step-id="' + stepId + '"] .step-title'
+  );
   if (stepEl) {
     title = stepEl.textContent;
   }
@@ -456,25 +459,28 @@ function hideHelp() {
 /* DOM wiring */
 
 document.addEventListener("DOMContentLoaded", function () {
-  steps = Array.from(document.querySelectorAll('.step'));
-  progressLabel = document.getElementById('progress-label');
-  progressBar = document.getElementById('progress-bar');
+  steps = Array.from(document.querySelectorAll(".step"));
+  progressLabel = document.getElementById("progress-label");
+  progressBar = document.getElementById("progress-bar");
 
-  const helpCard = document.getElementById("help-card");
-  if (helpCard) {
-    helpCard.addEventListener("click", function (e) {
-      const btn = e.target.closest("[data-subhelp]");
-      if (!btn) return;
-      const subId = btn.getAttribute("data-subhelp");
-      showSubHelp(subId);
-    });
-  }
-
-  // Make screenshots clickable to open larger
+  // Global delegation for help pills
   document.addEventListener("click", function (e) {
+    const pill = e.target.closest("[data-subhelp]");
+    if (pill) {
+      const subId = pill.getAttribute("data-subhelp");
+      if (subId) {
+        e.preventDefault();
+        showSubHelp(subId);
+      }
+      return;
+    }
+
+    // Make screenshots clickable to open larger
     const img = e.target.closest(".help-image");
-    if (!img) return;
-    window.open(img.src, "_blank");
+    if (img) {
+      e.preventDefault();
+      window.open(img.src, "_blank");
+    }
   });
 
   showStep("start");
