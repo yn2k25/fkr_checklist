@@ -1,7 +1,8 @@
-const historyStack = ['start'];
-const steps = Array.from(document.querySelectorAll('.step'));
-const progressLabel = document.getElementById('progress-label');
-const progressBar = document.getElementById('progress-bar');
+// Navigation state
+let historyStack = ['start'];
+let steps = [];
+let progressLabel;
+let progressBar;
 
 const orderedStepIds = [
   'start',
@@ -34,30 +35,7 @@ const orderedStepIds = [
 
 let interactionType = null;
 
-function setInteraction(type) {
-  interactionType = type;
-  if (type === 'appointment') {
-    goTo('prep_appointment');
-  } else {
-    goTo('prep_walkin');
-  }
-}
-
-function goToAfterReceiptNext() {
-  if (interactionType === 'walkin') {
-    goTo('after_photo');
-  } else {
-    goTo('after_calendar');
-  }
-}
-
-function jumpToStep(id) {
-  if (!id) return;
-  goTo(id);
-  const select = document.getElementById('step-jump');
-  select.value = '';
-}
-
+// Main help text for each step
 const helpContent = {
   start:
     "Choose <strong>Scheduled appointment</strong> if this person was on the calendar.<br><br>" +
@@ -111,7 +89,7 @@ const helpContent = {
     "</ol>" +
     "<button class='help-detail' data-subhelp='adopt_outcome_start'>Show where to start Outcome</button>" +
     "<button class='help-detail' data-subhelp='adopt_outcome_fields'>Show Outcome fields example</button>" +
-    "<button class='help-detail' data-subhelp='multi_outcome'>Show multi-cat Outcome example</button>",
+    "<button class='help-detail' data-subhelp='multi_outcome'>Multi-cat outcome example</button>",
 
   adopt_main_3:
     "<p><strong>Vouchers:</strong></p>" +
@@ -201,8 +179,7 @@ const helpContent = {
     "<p>Scan and upload all signed ADA pages to the animal record.</p>" +
     "<ol>" +
       "<li>Scanned file in Downloads folder: " +
-        "<span class=\"highlight\">\"Adoption Disclosure Agreement - kitty name\"</span>." +
-      "</li>" +
+        "<span class=\"highlight\">\"Adoption Disclosure Agreement - kitty name\"</span>.</li>" +
       "<li>On each cat's record, go to <strong>Memo/Files</strong> to upload the file:" +
         "<ul>" +
           "<li>For the file Name, use " +
@@ -290,6 +267,7 @@ const helpContent = {
     "<p>You can tap <strong>Start again</strong> when you are ready to begin the checklist for the next adopter.</p>"
 };
 
+// Sub help image content
 const subHelpContent = {
   adopt_outcome_start: {
     title: "Where to start Outcome on person",
@@ -350,27 +328,51 @@ const subHelpContent = {
 
 let currentHelpStep = null;
 
+/* Navigation helpers, used by inline onclick handlers */
+
+function setInteraction(type) {
+  interactionType = type;
+  if (type === 'appointment') {
+    goTo('prep_appointment');
+  } else {
+    goTo('prep_walkin');
+  }
+}
+
+function goToAfterReceiptNext() {
+  if (interactionType === 'walkin') {
+    goTo('after_photo');
+  } else {
+    goTo('after_calendar');
+  }
+}
+
+function jumpToStep(id) {
+  if (!id) return;
+  goTo(id);
+  const select = document.getElementById('step-jump');
+  if (select) select.value = '';
+}
+
 function showStep(id) {
+  if (!steps.length) return;
   steps.forEach(step => {
     step.classList.toggle('active', step.dataset.stepId === id);
   });
   const index = orderedStepIds.indexOf(id);
-  if (index >= 0) {
+  if (index >= 0 && progressLabel && progressBar) {
     const stepNum = index + 1;
     const total = orderedStepIds.length;
     progressLabel.textContent = "Step " + stepNum + " of " + total;
     const pct = Math.round((stepNum - 1) / (total - 1) * 100);
     progressBar.style.width = pct + "%";
-  } else {
-    progressBar.style.width = "0%";
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function goTo(id, reset = false) {
   if (reset) {
-    historyStack.length = 0;
-    historyStack.push(id);
+    historyStack = [id];
   } else {
     const last = historyStack[historyStack.length - 1];
     if (last !== id) {
@@ -389,12 +391,16 @@ function goBack() {
   }
 }
 
+/* Help overlay */
+
 function showHelp(stepId) {
   currentHelpStep = stepId;
   const overlay = document.getElementById("help-overlay");
   const titleEl = document.getElementById("help-title");
   const textEl = document.getElementById("help-text");
   const backBtn = document.getElementById("help-back-btn");
+
+  if (!overlay || !titleEl || !textEl || !backBtn) return;
 
   const defaultTitle = "Step help";
   const defaultText = "If you are unsure what to do on this step, pause and ask a staff member for guidance.";
@@ -421,6 +427,8 @@ function showSubHelp(subId) {
   const textEl = document.getElementById("help-text");
   const backBtn = document.getElementById("help-back-btn");
 
+  if (!overlay || !titleEl || !textEl || !backBtn) return;
+
   const data = subHelpContent[subId];
   if (!data) return;
 
@@ -440,24 +448,34 @@ function backToMainHelp() {
 
 function hideHelp() {
   const overlay = document.getElementById("help-overlay");
+  if (!overlay) return;
   overlay.classList.remove("active");
   overlay.setAttribute("aria-hidden", "true");
 }
 
-// Watch for clicks on detail buttons inside the help card
-document.getElementById("help-card").addEventListener("click", function (e) {
-  const btn = e.target.closest("[data-subhelp]");
-  if (!btn) return;
-  const subId = btn.getAttribute("data-subhelp");
-  showSubHelp(subId);
-});
+/* DOM wiring */
 
-// Make screenshots clickable to open larger
-document.addEventListener("click", function (e) {
-  const img = e.target.closest(".help-image");
-  if (!img) return;
-  window.open(img.src, "_blank");
-});
+document.addEventListener("DOMContentLoaded", function () {
+  steps = Array.from(document.querySelectorAll('.step'));
+  progressLabel = document.getElementById('progress-label');
+  progressBar = document.getElementById('progress-bar');
 
-// Initial render
-showStep("start");
+  const helpCard = document.getElementById("help-card");
+  if (helpCard) {
+    helpCard.addEventListener("click", function (e) {
+      const btn = e.target.closest("[data-subhelp]");
+      if (!btn) return;
+      const subId = btn.getAttribute("data-subhelp");
+      showSubHelp(subId);
+    });
+  }
+
+  // Make screenshots clickable to open larger
+  document.addEventListener("click", function (e) {
+    const img = e.target.closest(".help-image");
+    if (!img) return;
+    window.open(img.src, "_blank");
+  });
+
+  showStep("start");
+});
