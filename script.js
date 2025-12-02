@@ -111,7 +111,7 @@ const helpContent = {
     "</ol>" +
     "<button class='help-detail' data-subhelp='adopt_outcome_start'>Show where to start Outcome</button>" +
     "<button class='help-detail' data-subhelp='adopt_outcome_fields'>Show Outcome fields example</button>" +
-    "<button class='help-detail' data-subhelp='multicat_outcome'>Multi-cat outcome example</button>",
+    "<button class='help-detail' data-subhelp='multi_outcome'>Show multi-cat Outcome example</button>",
 
   adopt_main_3:
     "<p><strong>Vouchers:</strong></p>" +
@@ -146,8 +146,8 @@ const helpContent = {
     "<li>From the completed adoption outcome, open the contract print option.</li>" +
     "<li>Print or display the contract for the adopter to sign.</li>" +
     "<li>Follow your normal workflow for emailing the signed copy to the adopter.</li>" +
+    "<li>If this is a multi-cat adoption, generate and have them sign a separate contract for each cat.</li>" +
     "</ol>" +
-    "<p><strong>Multi-cat?</strong> Generate and have a separate contract signed for each cat in the adoption.</p>" +
     "<button class='help-detail' data-subhelp='contract_print'>Show where to print contract</button>",
 
   adopt_main_7:
@@ -198,12 +198,21 @@ const helpContent = {
 
   after_upload_ada:
     "<p><strong>Upload ADA forms and use correct naming:</strong></p>" +
+    "<p>Scan and upload all signed ADA pages to the animal record.</p>" +
     "<ol>" +
-    "<li>Scan or photograph the signed ADA pages.</li>" +
-    "<li>On the cat record, go to <strong>Memos/Files</strong> and click the green plus next to Files.</li>" +
-    "<li>For the file <strong>Name</strong>, use <em><strong>Signed Kitten ADA -kitty name</strong></em> and/or <em><strong>Signed Medical ADA -kitty name</strong></em> as appropriate.</li>" +
-    "<li>Set <strong>Type</strong> to <em>Adoption Document</em> and <strong>Subtype</strong> to <em>Adoption Disclosure Agreement - ADA</em>.</li>" +
-    "<li>Select the scanned file from Downloads and upload it. Confirm you can clearly read dates and signatures.</li>" +
+      "<li>Scanned file in Downloads folder: " +
+        "<span class=\"highlight\">\"Adoption Disclosure Agreement - kitty name\"</span>." +
+      "</li>" +
+      "<li>On each cat's record, go to <strong>Memo/Files</strong> to upload the file:" +
+        "<ul>" +
+          "<li>For the file Name, use " +
+            "<span class=\"highlight\">\"Signed Kitten ADA -kitty name\"</span> and/or " +
+            "<span class=\"highlight\">\"Signed Medical ADA -kitty name\"</span> as appropriate.</li>" +
+          "<li>Set Type to " +
+            "<span class=\"highlight\">\"Adoption Document\"</span> and Subtype to " +
+            "<span class=\"highlight\">\"Adoption Disclosure Agreement - ADA\"</span>.</li>" +
+        "</ul>" +
+      "</li>" +
     "</ol>",
 
   after_upload_consult:
@@ -224,7 +233,7 @@ const helpContent = {
     "</ol>" +
     "<button class='help-detail' data-subhelp='receipt_new'>How to create new receipt</button>" +
     "<button class='help-detail' data-subhelp='receipt_screen'>Receipt - New screen example</button>" +
-    "<button class='help-detail' data-subhelp='multicat_receipt'>Multi-cat receipt example</button>",
+    "<button class='help-detail' data-subhelp='multi_receipt'>Multi-cat receipt example</button>",
 
   after_calendar:
     "<p><strong>Update the calendar:</strong></p>" +
@@ -263,12 +272,10 @@ const helpContent = {
   no_adopt:
     "<p><strong>If no cat was adopted:</strong></p>" +
     "<ol>" +
-    "<li>If the adopter does not exist in PetPoint, create the person record so you can add notes and upload the consultation form.</li>" +
     "<li>If something felt concerning or needs more review, add a <em>Future adopt - needs discussion</em> memo.</li>" +
-    "<li>Scan and upload the consultation form to the person record.</li>" +
+    "<li>If this was a walk in, scan and upload the consultation form to the person record.</li>" +
     "<li>Update the calendar with the correct no adoption reason.</li>" +
-    "</ol>" +
-    "<button class='help-detail' data-subhelp='create_person'>Show how to create person</button>",
+    "</ol>",
 
   stop_staff:
     "<p><strong>When you have a concern:</strong></p>" +
@@ -294,10 +301,10 @@ const subHelpContent = {
     html:
       "<img src='2-outcome-form-filled.png' alt='Outcome New form filled example' class='help-image'>"
   },
-  multicat_outcome: {
-    title: "Multi-cat outcome on person",
+  multi_outcome: {
+    title: "Multi-cat Outcome on person",
     html:
-      "<img src='1-multiple-cat-outcome-on-person.png' alt='Multiple cats linked on Outcome on person' class='help-image'>"
+      "<img src='1-multiple-cat-outcome-on-person.png' alt='Multiple cats linked on Outcome on person record' class='help-image'>"
   },
   voucher_cat: {
     title: "Voucher on cat example",
@@ -334,15 +341,10 @@ const subHelpContent = {
     html:
       "<img src='9-receipt-form.png' alt='Receipt form and payment panel' class='help-image'>"
   },
-  multicat_receipt: {
+  multi_receipt: {
     title: "Multi-cat receipt example",
     html:
-      "<img src='8-multi-cat-receipt-on-person.png' alt='Multi-cat receipt on person record' class='help-image'>"
-  },
-  create_person: {
-    title: "Create new person",
-    html:
-      "<p>This is a placeholder for a future screenshot showing the New Person screen in PetPoint.</p>"
+      "<img src='8-multi-cat-receipt-on-person.png' alt='Multi-cat receipt from person record' class='help-image'>"
   }
 };
 
@@ -411,9 +413,6 @@ function showHelp(stepId) {
   backBtn.style.display = "none";
   overlay.classList.add("active");
   overlay.setAttribute("aria-hidden", "false");
-
-  // attach zoom handler for any images already in the help text
-  attachZoomHandlers();
 }
 
 function showSubHelp(subId) {
@@ -431,8 +430,6 @@ function showSubHelp(subId) {
 
   overlay.classList.add("active");
   overlay.setAttribute("aria-hidden", "false");
-
-  attachZoomHandlers();
 }
 
 function backToMainHelp() {
@@ -447,39 +444,7 @@ function hideHelp() {
   overlay.setAttribute("aria-hidden", "true");
 }
 
-// image zoom
-const zoomOverlay = document.getElementById("image-zoom-overlay");
-const zoomImg = document.getElementById("zoomed-image");
-
-function openZoom(src, alt) {
-  zoomImg.src = src;
-  zoomImg.alt = alt || "";
-  zoomOverlay.classList.add("active");
-  zoomOverlay.setAttribute("aria-hidden", "false");
-}
-
-function closeZoom() {
-  zoomOverlay.classList.remove("active");
-  zoomOverlay.setAttribute("aria-hidden", "true");
-  zoomImg.src = "";
-  zoomImg.alt = "";
-}
-
-zoomOverlay.addEventListener("click", function (e) {
-  if (e.target === zoomOverlay) {
-    closeZoom();
-  }
-});
-
-// attach click handlers to images inside help text
-function attachZoomHandlers() {
-  const imgs = document.querySelectorAll("#help-text img.help-image");
-  imgs.forEach(img => {
-    img.onclick = () => openZoom(img.src, img.alt);
-  });
-}
-
-// delegate clicks on subhelp pills
+// Watch for clicks on detail buttons inside the help card
 document.getElementById("help-card").addEventListener("click", function (e) {
   const btn = e.target.closest("[data-subhelp]");
   if (!btn) return;
@@ -487,5 +452,12 @@ document.getElementById("help-card").addEventListener("click", function (e) {
   showSubHelp(subId);
 });
 
-// init
+// Make screenshots clickable to open larger
+document.addEventListener("click", function (e) {
+  const img = e.target.closest(".help-image");
+  if (!img) return;
+  window.open(img.src, "_blank");
+});
+
+// Initial render
 showStep("start");
