@@ -11,7 +11,8 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -63,7 +64,7 @@ main {
   background: var(--card-bg);
   border-radius: 18px;
   padding: 22px 18px 20px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.18);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
   width: 100%;
   max-width: 520px;
   display: flex;
@@ -117,7 +118,7 @@ button.secondary {
 button.outline {
   background: transparent;
   color: var(--muted);
-  border: 1px solid rgba(0,0,0,0.35);
+  border: 1px solid rgba(0, 0, 0, 0.35);
   font-size: 1.1rem;
   padding: 13px 18px;
 }
@@ -233,12 +234,10 @@ footer {
   font-size: 0.95rem;
 }
 
-/* Help overlay */
-
 .help-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0, 0, 0, 0.55);
   display: none;
   align-items: center;
   justify-content: center;
@@ -256,7 +255,7 @@ footer {
   background: #ffffff;
   border-radius: 14px;
   padding: 22px 20px 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   font-size: 1.15rem;
 }
 
@@ -283,12 +282,6 @@ footer {
   margin: 0.4em 0 0.4em;
 }
 
-/* Yellow highlight inside help text */
-.help-text .highlight {
-  background: #fff5a8;
-  padding: 0 2px;
-}
-
 .help-close-row {
   display: flex;
   justify-content: flex-end;
@@ -307,7 +300,6 @@ footer {
   border-radius: 8px;
   margin-top: 10px;
   display: block;
-  cursor: zoom-in;
 }
 
 .help-detail {
@@ -328,11 +320,44 @@ footer {
   transform: scale(0.97);
 }
 
+/* ADA list on main step */
+.ada-steps {
+  font-size: 1.05rem;
+  margin-top: 0;
+  margin-bottom: 10px;
+  padding-left: 1.4em;
+}
+
+.ada-steps ul {
+  margin-top: 0.3em;
+  padding-left: 1.2em;
+}
+
+/* Yellow highlight for file names etc */
+.highlight {
+  background: #fff5a5;
+  padding: 0 2px;
+}
+
+/* Small screen tweaks */
 @media (max-width: 380px) {
-  body { font-size: clamp(20px, 4.2vh, 28px); }
-  header h1 { font-size: 1.5rem; }
-  .step-title { font-size: 1.5rem; }
-  button { font-size: 1.2rem; }
-  .step-jump-row button { font-size: 0.9rem; padding: 8px 10px; }
-  .step-jump-row select { font-size: 0.9rem; }
+  body {
+    font-size: clamp(20px, 4.2vh, 28px);
+  }
+  header h1 {
+    font-size: 1.5rem;
+  }
+  .step-title {
+    font-size: 1.5rem;
+  }
+  button {
+    font-size: 1.2rem;
+  }
+  .step-jump-row button {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
+  .step-jump-row select {
+    font-size: 0.9rem;
+  }
 }
