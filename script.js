@@ -1,9 +1,15 @@
-// Minimal question data structure. Plug your real questions in here.
+// Basic checklist data. Add more questions or sections as needed.
 const questions = [
   {
     id: "q1",
     section: "Meet and greet",
     text: "Any concerning behavior?",
+    answers: [
+      { id: "no_concern", label: "No - everything looks appropriate", kind: "positive" },
+      { id: "yes_concern", label: "Yes - concern exists", kind: "negative" },
+      { id: "opt3", label: "Option 3", kind: "neutral" },
+      { id: "opt4", label: "Option 4", kind: "neutral" }
+    ],
     helpTitle: "Any concerning behavior?",
     helpIntro: "During the meet and greet:",
     helpBullets: [
@@ -11,31 +17,69 @@ const questions = [
       "If anything feels off, pause and talk to staff."
     ],
     screenshots: [
-      // put screenshot URLs here if you want them zoomable
-      // "screenshot1.png"
+      // example: "images/outcome-dialog.png"
     ]
   }
-  // add more items as needed
+  // add more question objects here
 ];
 
 let currentIndex = 0;
+const answersByQuestion = {}; // simple storage of chosen answers
+
+/* rendering helpers */
 
 function renderQuestion(index) {
   const item = questions[index];
   if (!item) return;
 
+  // text and section
   document.getElementById("questionText").textContent = item.text;
   document.getElementById("sectionLabel").textContent = item.section;
 
+  // answers
+  const answersBlock = document.getElementById("answersBlock");
+  answersBlock.innerHTML = "";
+
+  item.answers.forEach((ans) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = ans.label;
+    btn.className =
+      "answer-button " +
+      (ans.kind === "positive"
+        ? "answer-positive"
+        : ans.kind === "negative"
+        ? "answer-negative"
+        : "answer-neutral");
+
+    btn.dataset.answerId = ans.id;
+
+    // restore selected state
+    if (answersByQuestion[item.id] === ans.id) {
+      btn.classList.add("selected");
+    }
+
+    btn.addEventListener("click", () => {
+      answersByQuestion[item.id] = ans.id;
+      document
+        .querySelectorAll(".answer-button")
+        .forEach((b) => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
+
+    answersBlock.appendChild(btn);
+  });
+
+  // help content
   document.getElementById("helpTitle").textContent = item.helpTitle;
   document.getElementById("helpIntro").textContent = item.helpIntro;
 
-  const list = document.getElementById("helpList");
-  list.innerHTML = "";
+  const helpList = document.getElementById("helpList");
+  helpList.innerHTML = "";
   (item.helpBullets || []).forEach((line) => {
     const li = document.createElement("li");
     li.textContent = line;
-    list.appendChild(li);
+    helpList.appendChild(li);
   });
 
   const shotContainer = document.getElementById("helpScreenshotContainer");
@@ -49,10 +93,12 @@ function renderQuestion(index) {
     shotContainer.appendChild(img);
   });
 
+  // progress bar
   const progress =
     questions.length > 1 ? ((index + 1) / questions.length) * 100 : 100;
   document.getElementById("progressFill").style.width = progress + "%";
 
+  // jump dropdown sync
   const jump = document.getElementById("jumpSelect");
   if (jump && jump.value !== String(index)) {
     jump.value = String(index);
@@ -80,7 +126,7 @@ function buildJumpMenu() {
   });
 }
 
-// Help modal
+/* help modal */
 
 function openHelp() {
   const overlay = document.getElementById("helpModal");
@@ -94,7 +140,7 @@ function closeHelp() {
   overlay.setAttribute("aria-hidden", "true");
 }
 
-// Zoom overlay
+/* zoom overlay */
 
 function openZoom(src) {
   const overlay = document.getElementById("zoomOverlay");
@@ -110,29 +156,25 @@ function closeZoom() {
   overlay.setAttribute("aria-hidden", "true");
 }
 
+/* wiring */
+
 function wireEvents() {
-  // help buttons
-  document
-    .getElementById("helpChip")
-    .addEventListener("click", openHelp);
+  // help chip and modal close
+  document.getElementById("helpChip").addEventListener("click", openHelp);
+  document.getElementById("helpCloseBtn").addEventListener("click", closeHelp);
 
-  document
-    .getElementById("helpCloseBtn")
-    .addEventListener("click", closeHelp);
-
-  // close help by clicking outside dialog
+  // click outside dialog to close help
   document.getElementById("helpModal").addEventListener("click", (e) => {
     if (e.target.id === "helpModal") {
       closeHelp();
     }
   });
 
-  // zoom close
+  // zoom close bar and click on dark background
   document
     .getElementById("zoomCloseButton")
     .addEventListener("click", closeZoom);
 
-  // close zoom by tapping dark background
   document.getElementById("zoomOverlay").addEventListener("click", (e) => {
     if (e.target.id === "zoomOverlay") {
       closeZoom();
@@ -153,18 +195,9 @@ function wireEvents() {
       renderQuestion(currentIndex);
     }
   });
-
-  // answer buttons selection
-  document.querySelectorAll(".answer-button").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document
-        .querySelectorAll(".answer-button")
-        .forEach((b) => b.classList.remove("selected"));
-      btn.classList.add("selected");
-      // hook your existing logic here using btn.dataset.answer
-    });
-  });
 }
+
+/* init */
 
 document.addEventListener("DOMContentLoaded", () => {
   buildJumpMenu();
