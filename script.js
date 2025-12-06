@@ -1,54 +1,154 @@
-// History + step tracking
-const historyStack = ['start'];
-const steps = Array.from(document.querySelectorAll('.step'));
-const progressLabel = document.getElementById('progress-label');
-const progressBar = document.getElementById('progress-bar');
-const stepJumpSelect = document.getElementById('step-jump');
-
-// Step order used for progress + JumpTo
-const orderedStepIds = [
-  'start',
-  'prep_appointment',
-  'prep_walkin',
-  'meet',
-  'decision',
-  'adopt_main_create_person',
-  'no_adopt_create_person',
-  'create_person',
-  'adopt_main_1',
-  'adopt_main_2',
-  'adopt_main_3',
-  'adopt_main_4',
-  'adopt_main_5',
-  'adopt_main_6',
-  'adopt_main_7',
-  'adopt_after',
-  'after_leave',
-  'after_memo_cat',
-  'after_association',
-  'after_upload_ada',
-  'after_upload_consult',
-  'after_receipt',
-  'after_calendar',
-  'after_photo',
-  'after_email',
-  'after_whiteboard',
-  'no_adopt',
-  'stop_staff',
-  'done'
+// Ordered steps and labels for Jump to step menu
+const stepMeta = [
+  { id: "start", label: "Start" },
+  { id: "prep_appointment", label: "Appointment prep" },
+  { id: "prep_walkin", label: "Walk in prep" },
+  { id: "meet", label: "Meet and greet" },
+  { id: "decision", label: "Decision" },
+  { id: "person_create", label: "Create Person if needed" },
+  { id: "adopt_main_1", label: "Adopter in PetPoint" },
+  { id: "adopt_main_2", label: "Outcome started" },
+  { id: "adopt_main_3", label: "Vouchers" },
+  { id: "adopt_main_4", label: "Microchip consent" },
+  { id: "adopt_main_5", label: "Folder ADA forms" },
+  { id: "adopt_main_6", label: "Contract" },
+  { id: "adopt_main_7", label: "Payment" },
+  { id: "adopt_after", label: "Sending kitty home" },
+  { id: "after_leave", label: "Adopter memo" },
+  { id: "after_memo_cat", label: "Cat memo" },
+  { id: "after_association", label: "Association updated" },
+  { id: "after_upload_ada", label: "Upload ADA forms" },
+  { id: "after_upload_consult", label: "Upload consult" },
+  { id: "after_receipt", label: "Receipt" },
+  { id: "after_calendar", label: "Calendar" },
+  { id: "after_photo", label: "Photo to Kim" },
+  { id: "after_email", label: "Outlook email" },
+  { id: "after_whiteboard", label: "Whiteboards" },
+  { id: "no_adopt", label: "No adoption wrap up" },
+  { id: "stop_staff", label: "Stop and notify staff" },
+  { id: "done", label: "Complete" }
 ];
 
-// which path (appointment / walk-in)
+const orderedStepIds = stepMeta.map(s => s.id);
+
+const steps = Array.from(document.querySelectorAll(".step"));
+const progressLabel = document.getElementById("progress-label");
+const progressBar = document.getElementById("progress-bar");
+const jumpSelect = document.getElementById("step-jump");
+
+let historyStack = ["start"];
 let interactionType = null;
-// which path we came from for create_person
-let createPersonReturnTarget = null;
-// set of steps that have been visited / completed
-const completedSteps = new Set();
+let currentStepId = "start";
+let completedSteps = new Set();
 
-// map stepId -> title text
-const stepLabels = {};
+// Build Jump to step dropdown
+function buildJumpDropdown() {
+  jumpSelect.innerHTML = "";
+  const defaultOpt = document.createElement("option");
+  defaultOpt.value = "";
+  defaultOpt.textContent = "Jump to step…";
+  jumpSelect.appendChild(defaultOpt);
 
-// Help overlay content
+  stepMeta.forEach((meta, index) => {
+    const opt = document.createElement("option");
+    opt.value = meta.id;
+    const stepNum = index + 1;
+    const isDone = completedSteps.has(meta.id);
+    const prefix = isDone ? "✓ " : stepNum + ". ";
+    opt.textContent = prefix + meta.label;
+    jumpSelect.appendChild(opt);
+  });
+}
+
+function refreshJumpDropdownLabels() {
+  // rebuild options so checkmarks update
+  buildJumpDropdown();
+  // keep current selection empty for tap navigation
+  jumpSelect.value = "";
+}
+
+function setInteraction(type) {
+  interactionType = type;
+  if (type === "appointment") {
+    goTo("prep_appointment");
+  } else {
+    goTo("prep_walkin");
+  }
+}
+
+function startOver() {
+  interactionType = null;
+  completedSteps = new Set();
+  historyStack = ["start"];
+  currentStepId = "start";
+  showStep("start");
+  refreshJumpDropdownLabels();
+}
+
+function goToAfterReceiptNext() {
+  if (interactionType === "walkin") {
+    goTo("after_photo");
+  } else {
+    goTo("after_calendar");
+  }
+}
+
+function jumpToStep(id) {
+  if (!id) return;
+  goTo(id);
+  jumpSelect.value = "";
+}
+
+function showStep(id) {
+  steps.forEach(step => {
+    step.classList.toggle("active", step.dataset.stepId === id);
+  });
+
+  const index = orderedStepIds.indexOf(id);
+  if (index >= 0) {
+    const stepNum = index + 1;
+    const total = orderedStepIds.length;
+    progressLabel.textContent = "Step " + stepNum + " of " + total;
+    const pct = Math.round((stepNum - 1) / (total - 1) * 100);
+    progressBar.style.width = pct + "%";
+  } else {
+    progressBar.style.width = "0%";
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function goTo(id, reset = false) {
+  if (reset) {
+    historyStack = [id];
+    completedSteps = new Set();
+  } else {
+    if (currentStepId && currentStepId !== id) {
+      completedSteps.add(currentStepId);
+    }
+    const last = historyStack[historyStack.length - 1];
+    if (last !== id) {
+      historyStack.push(id);
+    }
+  }
+  currentStepId = id;
+  showStep(id);
+  refreshJumpDropdownLabels();
+}
+
+function goBack() {
+  if (historyStack.length > 1) {
+    historyStack.pop();
+    currentStepId = historyStack[historyStack.length - 1];
+    showStep(currentStepId);
+  } else {
+    currentStepId = "start";
+    showStep("start");
+  }
+}
+
+/* Help content */
+
 const helpContent = {
   start:
     "Choose <strong>Scheduled appointment</strong> if this person was on the calendar.<br><br>" +
@@ -57,62 +157,43 @@ const helpContent = {
   prep_appointment:
     "<p><strong>For a scheduled appointment:</strong></p>" +
     "<ol>" +
-    "<li>Open the consultation form and review it before the meet and greet.</li>" +
-    "<li>In PetPoint, search for the person and check for any Do Not Adopt flags.</li>" +
-    "<li>If you see anything concerning, pause and talk with staff before you continue.</li>" +
+    "<li>Review the consultation form before the meet and greet.</li>" +
+    "<li>In PetPoint, check for any Do Not Adopt flags.</li>" +
     "</ol>",
 
   prep_walkin:
     "<p><strong>For a walk in:</strong></p>" +
     "<ol>" +
     "<li>Have the visitor complete the consultation form.</li>" +
-    "<li>Check that all required questions are answered.</li>" +
-    "<li>In PetPoint, search for the person or create a new record.</li>" +
-    "<li>Confirm they are not on the Do Not Adopt list before starting a meet and greet.</li>" +
+    "<li>Make sure all required questions are answered.</li>" +
+    "<li>Create or update their Person record in PetPoint.</li>" +
     "</ol>",
 
   meet:
     "<p>During the meet and greet:</p>" +
     "<ul>" +
     "<li>Watch how the person handles and talks about the cat.</li>" +
-    "<li>Listen for plans that sound unsafe or do not match FKR policies.</li>" +
-    "<li>If you feel uneasy or unsure, treat it as a concern and pause to talk with staff.</li>" +
+    "<li>If anything feels off, pause and talk to staff.</li>" +
     "</ul>",
 
   decision:
     "<p>If they clearly chose a specific cat today, pick <strong>Yes</strong> and move into the adoption steps.</p>" +
-    "<p>If they are still thinking, left without choosing, or want to come back another day, pick <strong>No</strong>.</p>",
+    "<p>If they are still thinking, or no cat is going home today, pick <strong>No</strong>.</p>",
 
-  adopt_main_create_person:
-    "<p><strong>If the adopter may already be in PetPoint:</strong></p>" +
+  person_create:
+    "<p><strong>Create the Person record:</strong></p>" +
     "<ol>" +
-    "<li>Search by name, email, and phone.</li>" +
-    "<li>If you find a match, confirm address, phone, and email.</li>" +
-    "<li>If you are sure they are new, go to <em>Need to create Person</em>.</li>" +
-    "</ol>",
-
-  no_adopt_create_person:
-    "<p><strong>For a walk-in or no-adoption visit:</strong></p>" +
-    "<ol>" +
-    "<li>Search first to avoid duplicate Person records.</li>" +
-    "<li>If they are new, create a Person so you can upload the consultation form and add notes.</li>" +
-    "</ol>",
-
-  create_person:
-    "<p><strong>Create new Person:</strong></p>" +
-    "<ol>" +
-    "<li>On the People tab, click the green plus to create a new Person.</li>" +
-    "<li>Enter full name, phone, and email. Include address if available.</li>" +
-    "<li>Save the record and use this Person for all outcomes, memos, and receipts.</li>" +
+    "<li>From the main search, confirm there is not already a record for this person.</li>" +
+    "<li>If none exists, use the green plus to create a new Person.</li>" +
+    "<li>Fill in name, address, phone, and email so you can contact them later.</li>" +
     "</ol>",
 
   adopt_main_1:
-    "<p><strong>PetPoint Person record:</strong></p>" +
+    "<p><strong>Person record check:</strong></p>" +
     "<ol>" +
     "<li>Search by name, email, or phone.</li>" +
-    "<li>If a record exists, confirm address, phone, and email.</li>" +
-    "<li>If needed, create a new record with complete contact info.</li>" +
-    "<li>Check that there are no duplicate records for this person.</li>" +
+    "<li>Confirm contact info is current.</li>" +
+    "<li>Merge or correct duplicates if needed.</li>" +
     "</ol>",
 
   adopt_main_2:
@@ -125,383 +206,144 @@ const helpContent = {
     "</ol>" +
     "<button class='help-detail' data-subhelp='adopt_outcome_start'>Show where to start Outcome</button>" +
     "<button class='help-detail' data-subhelp='adopt_outcome_fields'>Show Outcome fields example</button>" +
-    "<button class='help-detail' data-subhelp='adopt_outcome_multi'>Multi-cat outcome example</button>",
+    "<button class='help-detail' data-subhelp='multi_cat_outcome'>Multi cat outcome example</button>",
 
   adopt_main_3:
     "<p><strong>Vouchers:</strong></p>" +
     "<ol>" +
     "<li>Confirm which voucher each cat should receive.</li>" +
-    "<li>On the cat record, create the voucher and link it to the adoption.</li>" +
-    "<li>Check that Type, Subtype, and Issued/Expiry dates are correct.</li>" +
+    "<li>Create the voucher from the cat record and link it to the adoption.</li>" +
     "</ol>" +
-    "<button class='help-detail' data-subhelp='voucher_cat'>Show voucher example on cat</button>",
+    "<button class='help-detail' data-subhelp='voucher_cat'>Show voucher example</button>",
 
   adopt_main_4:
-    "<p><strong>Microchip and wellness option:</strong></p>" +
-    "<ol>" +
-    "<li>Confirm the microchip number is in the cat record.</li>" +
-    "<li>Explain how registration works and why it matters.</li>" +
-    "<li>Review the Petco or other wellness option and let the adopter choose.</li>" +
-    "<li>Record their choice and consent where required.</li>" +
-    "</ol>",
+    "<p>Review microchip and wellness options with the adopter and record their choice.</p>",
 
   adopt_main_5:
-    "<p><strong>Folder ADA forms:</strong></p>" +
-    "<ol>" +
-    "<li>Pull the correct red folder for this cat or group of cats.</li>" +
-    "<li>Go through each ADA and explain any special notes or restrictions.</li>" +
-    "<li>Answer questions and confirm understanding.</li>" +
-    "<li>Have the adopter sign where required and check that every required signature is present.</li>" +
-    "</ol>",
+    "<p>Go through each ADA in the folder, explain any special notes, and collect signatures.</p>",
 
   adopt_main_6:
-    "<p><strong>Contract:</strong></p>" +
-    "<ol>" +
-    "<li>From the completed adoption outcome, open the contract print option.</li>" +
-    "<li>Print or display the contract for the adopter to sign.</li>" +
-    "<li>Follow your normal workflow for emailing the signed copy to the adopter.</li>" +
-    "</ol>" +
+    "<p>Use the contract print option after the outcome is completed.</p>" +
     "<button class='help-detail' data-subhelp='contract_print'>Show where to print contract</button>",
 
   adopt_main_7:
-    "<p><strong>Payment:</strong></p>" +
-    "<ol>" +
-    "<li>Fill out the payment slip with correct fees and discounts.</li>" +
-    "<li>Take payment using the approved method.</li>" +
-    "<li>Record payment in PetPoint under the correct adopter.</li>" +
-    "<li>Confirm the balance shows as paid.</li>" +
-    "</ol>",
+    "<p>Make sure the payment slip, receipt, and PetPoint payment match.</p>",
 
   adopt_after:
-    "<p><strong>Before they leave:</strong></p>" +
-    "<ul>" +
-    "<li>Put together the adoption bag.</li>" +
-    "<li>Add litter sample if you have it.</li>" +
-    "<li>Record kitten weight where needed.</li>" +
-    "<li>Scan the cat to confirm microchip.</li>" +
-    "<li>Offer the kennel card or printed photo if that is standard.</li>" +
-    "</ul>",
+    "<p>Double check the adoption bag, litter sample, weight, microchip, and any printed items before the adopter leaves.</p>",
 
   after_leave:
-    "<p><strong>Adopter memo on person:</strong></p>" +
-    "<ol>" +
-    "<li>Open the <strong>Person</strong> record for the adopter.</li>" +
-    "<li>Add a new memo with Type <strong>Adoption Outcome</strong> and Subtype <strong>Adopted</strong>.</li>" +
-    "<li>Note any key facts about the appointment that will help if they call later.</li>" +
-    "</ol>" +
+    "<p>Add an Adoption Outcome memo on the person record so future staff can see how the appointment went.</p>" +
     "<button class='help-detail' data-subhelp='adopter_memo'>Show adopter memo example</button>",
 
   after_memo_cat:
-    "<p><strong>Cat outcome memo:</strong></p>" +
-    "<ol>" +
-    "<li>Open the cat's record.</li>" +
-    "<li>Add a new memo with Type <strong>Outcome</strong> and Subtype <strong>Adoption</strong>.</li>" +
-    "<li>Add a short note such as where the cat went and if they will join other pets.</li>" +
-    "</ol>" +
+    "<p>Add a short Outcome - Adoption memo on each cat so you can see where they went later.</p>" +
     "<button class='help-detail' data-subhelp='cat_memo'>Show cat memo example</button>",
 
   after_association:
-    "<p><strong>Update association:</strong></p>" +
-    "<ol>" +
-    "<li>On the person record, open the Associations tab.</li>" +
-    "<li>Add a new association for <strong>Adopter</strong>.</li>" +
-    "<li>Use the same Subtype that was on their Potential Adopter association (for example, FKR Website).</li>" +
-    "</ol>" +
+    "<p>Update the association to show this person is now an Adopter.</p>" +
     "<button class='help-detail' data-subhelp='association_new'>Show association example</button>",
 
   after_upload_ada:
-    "<p><strong>Upload ADA forms and use correct naming:</strong></p>" +
-    "<ol>" +
-    "<li>Scan or photograph the signed ADA pages.</li>" +
-    "<li>On the cat record, go to <strong>Memos/Files</strong> and click the green plus next to Files.</li>" +
-    "<li>Use the naming and Type/Subtype rules in the step description.</li>" +
-    "</ol>",
+    "<p>These steps are already listed on the main screen. Use this view if you want to see a larger screenshot for reference.</p>",
 
   after_upload_consult:
-    "<p><strong>Upload consultation form:</strong></p>" +
-    "<ol>" +
-    "<li>Scan or photograph the consult form if not already done.</li>" +
-    "<li>On the person record, upload the file to their Memos/Files area.</li>" +
-    "</ol>" +
+    "<p>Upload the scanned consultation form to the person record.</p>" +
     "<button class='help-detail' data-subhelp='consult_upload'>Consultation form upload screen</button>",
 
   after_receipt:
-    "<p><strong>Enter the receipt:</strong></p>" +
-    "<ol>" +
-    "<li>From the person record, use the green plus menu to create a new <strong>Receipt</strong>.</li>" +
-    "<li>On the Receipt - New screen, set the cash drawer and reference as your group uses them.</li>" +
-    "<li>Add the adoption item based on age and link the correct cat.</li>" +
-    "<li>When you click Pay, fill out the payment panel. Select Cash as the type if that is your standard, even when using Square, and note card details in the reference.</li>" +
-    "</ol>" +
+    "<p>Use these screenshots if you want visual guidance for the receipt and payment.</p>" +
     "<button class='help-detail' data-subhelp='receipt_new'>How to create new receipt</button>" +
     "<button class='help-detail' data-subhelp='receipt_screen'>Receipt - New screen example</button>" +
-    "<button class='help-detail' data-subhelp='receipt_multi'>Multi-cat receipt example</button>",
+    "<button class='help-detail' data-subhelp='multi_cat_receipt'>Multi cat receipt example</button>",
 
   after_calendar:
-    "<p><strong>Update the calendar:</strong></p>" +
-    "<ol>" +
-    "<li>Open the original appointment on the calendar.</li>" +
-    "<li>Mark it as completed and note that the cat was adopted.</li>" +
-    "<li>Use your standard wording for no-show, reschedule, or completed adoption.</li>" +
-    "</ol>",
+    "<p>Close or update the calendar appointment to show the correct outcome.</p>",
 
   after_photo:
-    "<p><strong>Photo to Kim:</strong></p>" +
-    "<ol>" +
-    "<li>Choose a clear photo of adopter and cat.</li>" +
-    "<li>Text the photo to Kim using the rescue's standard number or thread.</li>" +
-    "<li>Confirm guidelines about faces, minors, and social media have been followed.</li>" +
-    "</ol>",
+    "<p>Follow FKR photo guidelines and text the photo to Kim using the usual number or thread.</p>",
 
   after_email:
-    "<p><strong>Outlook Adoption Email:</strong></p>" +
-    "<ol>" +
-    "<li>Open Outlook and click <em>New Message</em>.</li>" +
-    "<li>In <strong>BCC</strong>, enter <em>Adoption Notification</em>. Leave the To and CC lines blank.</li>" +
-    "<li>Subject line: type the name(s) of the cat(s) adopted.</li>" +
-    "<li>In the message body, list the cat name(s), note that <em>PP done</em>, and indicate if the photo was sent.</li>" +
-    "<li>At the end of the message, include the names of the adoption counselors working that day.</li>" +
-    "</ol>",
+    "<p>Send the Outlook adoption email with cats adopted, PP done, whether photo was sent, and counselor names.</p>",
 
   after_whiteboard:
-    "<p><strong>Whiteboards:</strong></p>" +
-    "<ol>" +
-    "<li>Update any room or lobby boards that track which cats are available or adopted.</li>" +
-    "<li>Erase the adopted cat from available lists.</li>" +
-    "<li>Add any new notes that are part of your standard process.</li>" +
-    "</ol>",
+    "<p>Update room or lobby boards so they match the cats currently on site.</p>",
 
   no_adopt:
-    "<p><strong>If no cat was adopted:</strong></p>" +
-    "<ol>" +
-    "<li>If something felt concerning or needs more review, add a <em>Future adopt - needs discussion</em> memo.</li>" +
-    "<li>If this was a walk in, scan and upload the consultation form to the person record.</li>" +
-    "<li>Update the calendar with the correct no adoption reason.</li>" +
-    "</ol>",
+    "<p>If no cat was adopted, make sure the notes and future follow up are clear.</p>",
 
   stop_staff:
-    "<p><strong>When you have a concern:</strong></p>" +
-    "<ol>" +
-    "<li>End the visit kindly and step out of the room.</li>" +
-    "<li>Find a staff member and explain what you saw or heard.</li>" +
-    "<li>Follow staff direction before you schedule or approve anything else with this adopter.</li>" +
-    "</ol>",
+    "<p>When you have a concern, stop the process and speak with staff before moving forward.</p>",
 
   done:
-    "<p>This means you have finished all required tasks for this case.</p>" +
-    "<p>You can tap <strong>Start again</strong> when you are ready to begin the checklist for the next adopter.</p>"
+    "<p>You have finished all required tasks for this case.</p>"
 };
 
-// Second level help with screenshots only
 const subHelpContent = {
   adopt_outcome_start: {
     title: "Where to start Outcome on person",
-    html: "<img src='1-create-new-outcome-on-person.png' alt='Add Outcome from green plus menu on person' class='help-image' data-zoom>"
+    html:
+      "<img src='1-create-new-outcome-on-person.png' alt='Add Outcome from green plus menu on person' class='help-image'>"
   },
   adopt_outcome_fields: {
-    title: "Outcome - New fields example",
-    html: "<img src='2-outcome-form-filled.png' alt='Outcome New form filled example' class='help-image' data-zoom>"
-  },
-  adopt_outcome_multi: {
-    title: "Multi-cat outcome example",
-    html: "<img src='1-multiple-cat-outcome-on-person.png' alt='Multi-cat outcome on person' class='help-image' data-zoom>"
+    title: "Outcome form example",
+    html:
+      "<img src='2-outcome-form-filled.png' alt='Outcome New form filled example' class='help-image'>"
   },
   voucher_cat: {
     title: "Voucher on cat example",
-    html: "<img src='3-voucher-on-cat.png' alt='Voucher Automatic screen on cat' class='help-image' data-zoom>"
+    html:
+      "<img src='3-voucher-on-cat.png' alt='Voucher Automatic screen on cat' class='help-image'>"
   },
   contract_print: {
     title: "Where to print contract",
-    html: "<img src='4-create-contract-on-person-outcome.png' alt='Contract print option on adoption outcome' class='help-image' data-zoom>"
+    html:
+      "<img src='4-create-contract-on-person-outcome.png' alt='Contract print option on adoption outcome' class='help-image'>"
   },
   adopter_memo: {
     title: "Adopter memo on person",
-    html: "<img src='5-Adopter-memo.png' alt='Adoption Outcome memo on person' class='help-image' data-zoom>"
-  },
-  cat_memo: {
-    title: "Cat outcome memo",
-    html: "<img src='7-memo-on-pet.png' alt='Outcome memo on pet' class='help-image' data-zoom>"
+    html:
+      "<img src='5-Adopter-memo.png' alt='Adoption Outcome memo on person' class='help-image'>"
   },
   association_new: {
     title: "Association - new example",
-    html: "<img src='6-Association.png' alt='Association New screen with instructions' class='help-image' data-zoom>"
+    html:
+      "<img src='6-Association.png' alt='Association New screen' class='help-image'>"
+  },
+  cat_memo: {
+    title: "Cat outcome memo",
+    html:
+      "<img src='7-memo-on-pet.png' alt='Outcome memo on pet' class='help-image'>"
   },
   receipt_new: {
     title: "How to create new receipt",
-    html: "<img src='8-new-receipt-on-person.png' alt='New receipt from person record' class='help-image' data-zoom>"
+    html:
+      "<img src='8-new-receipt-on-person.png' alt='New receipt from person record' class='help-image'>"
   },
   receipt_screen: {
     title: "Receipt - New screen example",
-    html: "<img src='9-receipt-form.png' alt='Receipt form and payment panel' class='help-image' data-zoom>"
+    html:
+      "<img src='9-receipt-form.png' alt='Receipt form and payment panel' class='help-image'>"
   },
-  receipt_multi: {
-    title: "Multi-cat receipt example",
-    html: "<img src='8-multi-cat-receipt-on-person.png' alt='Multi-cat receipt on person' class='help-image' data-zoom>"
+  multi_cat_outcome: {
+    title: "Multi cat outcome example",
+    html:
+      "<img src='1-multiple-cat-outcome-on-person.png' alt='Outcome - New multi cat example' class='help-image'>"
+  },
+  multi_cat_receipt: {
+    title: "Multi cat receipt example",
+    html:
+      "<img src='8-multi-cat-receipt-on-person.png' alt='Multi cat receipt example' class='help-image'>"
   },
   consult_upload: {
     title: "Consultation form upload screen",
-    html: "<img src='10-Consultation-Form.png' alt='Consultation form upload screen' class='help-image' data-zoom>"
+    html:
+      "<img src='10-Consultation-Form.png' alt='Consultation form upload example' class='help-image'>"
   }
 };
 
 let currentHelpStep = null;
 
-// Lightbox for zooming screenshots
-let lightboxOverlay = null;
-
-function ensureLightbox() {
-  if (lightboxOverlay) return;
-  lightboxOverlay = document.createElement('div');
-  lightboxOverlay.className = 'lightbox-overlay';
-  lightboxOverlay.innerHTML = `
-    <div class="lightbox-content">
-      <button class="lightbox-close" type="button">Close</button>
-      <img src="" alt="Zoomed screenshot">
-    </div>
-  `;
-  document.body.appendChild(lightboxOverlay);
-
-  lightboxOverlay.addEventListener('click', (e) => {
-    if (e.target.classList.contains('lightbox-close') || e.target === lightboxOverlay) {
-      lightboxOverlay.classList.remove('active');
-    }
-  });
-}
-
-function openLightbox(src, alt) {
-  ensureLightbox();
-  const img = lightboxOverlay.querySelector('img');
-  img.src = src;
-  img.alt = alt || 'Zoomed screenshot';
-  lightboxOverlay.classList.add('active');
-}
-
-// Build map of step labels from DOM
-function buildStepLabels() {
-  orderedStepIds.forEach(id => {
-    const el = document.querySelector(`.step[data-step-id="${id}"] .step-title`);
-    stepLabels[id] = el ? el.textContent.trim() : id;
-  });
-}
-
-// Update the JumpTo dropdown with numbered steps and checkmarks
-function updateJumpOptions() {
-  if (!stepJumpSelect) return;
-
-  const placeholderText = 'Jump to step…';
-  stepJumpSelect.innerHTML = '';
-  const placeholder = document.createElement('option');
-  placeholder.value = '';
-  placeholder.textContent = placeholderText;
-  stepJumpSelect.appendChild(placeholder);
-
-  orderedStepIds.forEach((id, idx) => {
-    const opt = document.createElement('option');
-    opt.value = id;
-    const num = idx + 1;
-    const label = stepLabels[id] || id;
-    const done = completedSteps.has(id);
-    opt.textContent = (done ? '✔ ' : '') + num + '. ' + label;
-    stepJumpSelect.appendChild(opt);
-  });
-}
-
-function setInteraction(type) {
-  interactionType = type;
-  if (type === 'appointment') {
-    goTo('prep_appointment');
-  } else {
-    goTo('prep_walkin');
-  }
-}
-
-// When leaving receipt, send to different next step based on appointment vs walk-in
-function goToAfterReceiptNext() {
-  if (interactionType === 'walkin') {
-    goTo('after_photo');
-  } else {
-    goTo('after_calendar');
-  }
-}
-
-// From create_person, return to the correct next step based on what path we came from
-function goToFromCreatePerson() {
-  if (createPersonReturnTarget === 'adopt') {
-    goTo('adopt_main_1');
-  } else if (createPersonReturnTarget === 'no_adopt') {
-    goTo('no_adopt');
-  } else {
-    goTo('start');
-  }
-}
-
-function jumpToStep(id) {
-  if (!id) return;
-  goTo(id);
-  stepJumpSelect.value = '';
-}
-
-function showStep(id) {
-  steps.forEach(step => {
-    step.classList.toggle('active', step.dataset.stepId === id);
-  });
-  const index = orderedStepIds.indexOf(id);
-  if (index >= 0) {
-    const stepNum = index + 1;
-    const total = orderedStepIds.length;
-    progressLabel.textContent = "Step " + stepNum + " of " + total;
-    const pct = Math.round((stepNum - 1) / (total - 1) * 100);
-    progressBar.style.width = pct + "%";
-  } else {
-    progressBar.style.width = "0%";
-  }
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-// Main navigation
-function goTo(id, reset = false) {
-  const last = historyStack[historyStack.length - 1];
-
-  if (reset) {
-    historyStack.length = 0;
-    historyStack.push(id);
-    completedSteps.clear();
-  } else {
-    // Mark the step we are leaving as completed
-    if (last && last !== id) {
-      completedSteps.add(last);
-    }
-
-    // Special: entering create_person from adoption or no_adopt paths
-    if (id === 'create_person') {
-      if (last === 'adopt_main_create_person') {
-        createPersonReturnTarget = 'adopt';
-      } else if (last === 'no_adopt_create_person') {
-        createPersonReturnTarget = 'no_adopt';
-      }
-    }
-
-    if (last !== id) {
-      historyStack.push(id);
-    }
-  }
-
-  showStep(id);
-  updateJumpOptions();
-}
-
-function goBack() {
-  if (historyStack.length > 1) {
-    const popped = historyStack.pop();
-    completedSteps.add(popped);
-    showStep(historyStack[historyStack.length - 1]);
-  } else {
-    showStep("start");
-  }
-  updateJumpOptions();
-}
-
-// Help overlay controls
 function showHelp(stepId) {
   currentHelpStep = stepId;
   const overlay = document.getElementById("help-overlay");
@@ -510,12 +352,15 @@ function showHelp(stepId) {
   const backBtn = document.getElementById("help-back-btn");
 
   const defaultTitle = "Step help";
-  const defaultText = "If you are unsure what to do on this step, pause and ask a staff member for guidance.";
+  const defaultText =
+    "If you are unsure what to do on this step, pause and ask a staff member for guidance.";
 
   let title = defaultTitle;
   let text = helpContent[stepId] || defaultText;
 
-  const stepEl = document.querySelector('.step[data-step-id="' + stepId + '"] .step-title');
+  const stepEl = document.querySelector(
+    '.step[data-step-id="' + stepId + '"] .step-title'
+  );
   if (stepEl) {
     title = stepEl.textContent;
   }
@@ -529,13 +374,13 @@ function showHelp(stepId) {
 }
 
 function showSubHelp(subId) {
+  const data = subHelpContent[subId];
+  if (!data) return;
+
   const overlay = document.getElementById("help-overlay");
   const titleEl = document.getElementById("help-title");
   const textEl = document.getElementById("help-text");
   const backBtn = document.getElementById("help-back-btn");
-
-  const data = subHelpContent[subId];
-  if (!data) return;
 
   titleEl.textContent = data.title || "More details";
   textEl.innerHTML = data.html || "";
@@ -543,14 +388,6 @@ function showSubHelp(subId) {
 
   overlay.classList.add("active");
   overlay.setAttribute("aria-hidden", "false");
-
-  // Wire up zoom on any help images
-  const img = textEl.querySelector('img[data-zoom]');
-  if (img) {
-    img.addEventListener('click', () => {
-      openLightbox(img.src, img.alt);
-    }, { once: true });
-  }
 }
 
 function backToMainHelp() {
@@ -565,15 +402,37 @@ function hideHelp() {
   overlay.setAttribute("aria-hidden", "true");
 }
 
-// Watch for clicks on detail buttons inside the help card
+// Click handlers for help pills and screenshot zoom
+
 document.getElementById("help-card").addEventListener("click", function (e) {
-  const btn = e.target.closest("[data-subhelp]");
-  if (!btn) return;
-  const subId = btn.getAttribute("data-subhelp");
-  showSubHelp(subId);
+  const subBtn = e.target.closest("[data-subhelp]");
+  if (subBtn) {
+    const subId = subBtn.getAttribute("data-subhelp");
+    showSubHelp(subId);
+    return;
+  }
+
+  const img = e.target.closest(".help-image");
+  if (img) {
+    showZoom(img.getAttribute("src"));
+  }
 });
 
-// Initial setup
-buildStepLabels();
+function showZoom(src) {
+  const overlay = document.getElementById("image-zoom-overlay");
+  const img = document.getElementById("zoom-image");
+  img.src = src;
+  overlay.classList.add("active");
+  overlay.setAttribute("aria-hidden", "false");
+}
+
+function hideZoom() {
+  const overlay = document.getElementById("image-zoom-overlay");
+  overlay.classList.remove("active");
+  overlay.setAttribute("aria-hidden", "true");
+}
+
+// Init
+
+buildJumpDropdown();
 showStep("start");
-updateJumpOptions();
