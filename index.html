@@ -16,41 +16,16 @@
     <main>
       <div class="card">
 
-        <!-- Start over + jump -->
+        <!-- Start over + Jump to -->
         <div class="step-jump-row">
           <button class="outline" onclick="goTo('start', true)">Start over</button>
           <select id="step-jump" onchange="jumpToStep(this.value)">
             <option value="">Jump to step…</option>
-            <option value="start">Start</option>
-            <option value="prep_appointment">Appointment prep</option>
-            <option value="prep_walkin">Walk in prep</option>
-            <option value="meet">Meet and greet</option>
-            <option value="decision">Decision</option>
-            <option value="adopt_main_1">Adopter in PetPoint</option>
-            <option value="adopt_main_2">Outcome started</option>
-            <option value="adopt_main_3">Vouchers</option>
-            <option value="adopt_main_4">Microchip consent</option>
-            <option value="adopt_main_5">Folder ADA forms</option>
-            <option value="adopt_main_6">Contract</option>
-            <option value="adopt_main_7">Payment</option>
-            <option value="adopt_after">Sending kitty home</option>
-            <option value="after_leave">Adopter memo</option>
-            <option value="after_memo_cat">Cat memo</option>
-            <option value="after_association">Association updated</option>
-            <option value="after_upload_ada">Upload ADA forms</option>
-            <option value="after_upload_consult">Upload consult</option>
-            <option value="after_receipt">Receipt</option>
-            <option value="after_calendar">Calendar</option>
-            <option value="after_photo">Photo to Kim</option>
-            <option value="after_email">Outlook email</option>
-            <option value="after_whiteboard">Whiteboards</option>
-            <option value="no_adopt">No adoption wrap up</option>
-            <option value="stop_staff">Stop and notify staff</option>
-            <option value="done">Complete</option>
+            <!-- Options are populated by script.js using orderedStepIds + step titles -->
           </select>
         </div>
 
-        <!-- Progress -->
+        <!-- Progress bar -->
         <div class="progress">
           <div id="progress-label">Step 1</div>
           <div class="progress-bar-wrap">
@@ -64,8 +39,9 @@
           <div class="step-title">What type of interaction is this?</div>
           <div class="step-subtitle">Choose one to begin.</div>
           <div class="btn-row">
-            <button class="primary" onclick="setInteraction('appointment')">Scheduled appointment</button>
-            <button class="secondary" onclick="setInteraction('walkin')">Walk in</button>
+            <!-- Neutral choices: white with green border -->
+            <button class="neutral" onclick="setInteraction('appointment')">Scheduled appointment</button>
+            <button class="neutral" onclick="setInteraction('walkin')">Walk in</button>
             <button class="outline" onclick="showHelp('start')">Show me how</button>
           </div>
         </div>
@@ -110,6 +86,7 @@
           <div class="step-title">Any concerning behavior?</div>
           <div class="step-subtitle">Watch how the adopter interacts with the cat.</div>
           <div class="btn-row">
+            <!-- Positive = green, concern = red border -->
             <button class="primary" onclick="goTo('decision')">No - everything looks appropriate</button>
             <button class="secondary" onclick="goTo('stop_staff')">Yes - concern exists</button>
             <button class="outline" onclick="showHelp('meet')">Show me how</button>
@@ -123,9 +100,50 @@
           <div class="step-title">Did they choose a cat today?</div>
           <div class="step-subtitle">Pick Yes if a cat is going home today.</div>
           <div class="btn-row">
-            <button class="primary" onclick="goTo('adopt_main_1')">Yes - proceeding with adoption</button>
-            <button class="secondary" onclick="goTo('no_adopt')">No - no adoption today</button>
+            <button class="primary" onclick="goTo('adopt_main_create_person')">Yes - proceeding with adoption</button>
+            <button class="secondary" onclick="goTo('no_adopt_create_person')">No - no adoption today</button>
             <button class="outline" onclick="showHelp('decision')">Show me how</button>
+            <button class="outline" onclick="goBack()">Back</button>
+          </div>
+        </div>
+
+        <!-- CREATE PERSON (for adoption path) -->
+        <div class="step" data-step-id="adopt_main_create_person">
+          <div class="pill"><span class="dot"></span><span>Adoption</span></div>
+          <div class="step-title">Does the adopter already have a Person record?</div>
+          <div class="step-subtitle">Create the Person if they do not already exist in PetPoint.</div>
+          <div class="btn-row">
+            <button class="primary" onclick="goTo('adopt_main_1')">Yes - Person exists</button>
+            <button class="secondary" onclick="goTo('create_person')">No - need to create Person</button>
+            <button class="outline" onclick="showHelp('adopt_main_create_person')">Show me how</button>
+            <button class="outline" onclick="goBack()">Back</button>
+          </div>
+        </div>
+
+        <!-- CREATE PERSON (for no adoption path) -->
+        <div class="step" data-step-id="no_adopt_create_person">
+          <div class="pill"><span class="dot"></span><span>No adoption</span></div>
+          <div class="step-title">Does the visitor already have a Person record?</div>
+          <div class="step-subtitle">Create the Person if they do not already exist so you can add notes and upload the consultation form.</div>
+          <div class="btn-row">
+            <button class="primary" onclick="goTo('no_adopt')">Yes - Person exists</button>
+            <button class="secondary" onclick="goTo('create_person')">No - need to create Person</button>
+            <button class="outline" onclick="showHelp('no_adopt_create_person')">Show me how</button>
+            <button class="outline" onclick="goBack()">Back</button>
+          </div>
+        </div>
+
+        <!-- CREATE PERSON (shared) -->
+        <div class="step" data-step-id="create_person">
+          <div class="pill"><span class="dot"></span><span>Person</span></div>
+          <div class="step-title">Create Person record</div>
+          <div class="step-subtitle">
+            Search by name, email, and phone first to avoid duplicates. If no record exists, create a new Person with full contact info.
+          </div>
+          <div class="btn-row">
+            <button class="primary" onclick="goToFromCreatePerson()">Person created / confirmed</button>
+            <button class="secondary" onclick="alert('Finish creating the Person with current contact info, then tap Person created / confirmed')">Still working</button>
+            <button class="outline" onclick="showHelp('create_person')">Show me how</button>
             <button class="outline" onclick="goBack()">Back</button>
           </div>
         </div>
@@ -134,12 +152,10 @@
         <div class="step" data-step-id="adopt_main_1">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Is the adopter in PetPoint and is contact info verified?</div>
-          <div class="step-subtitle">
-            Confirm the person record is correct before you continue. Create the person if they do not already exist so notes and forms can be attached to the right record.
-          </div>
+          <div class="step-subtitle">Confirm the Person record is correct before you continue.</div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_main_2')">Yes - continue</button>
-            <button class="secondary" onclick="alert('Make sure the person record exists and contact info is current, then tap Yes')">Not yet</button>
+            <button class="secondary" onclick="alert('Make sure the Person record exists and contact info is current, then tap Yes')">Not yet</button>
             <button class="outline" onclick="showHelp('adopt_main_1')">Show me how</button>
             <button class="outline" onclick="goBack()">Back</button>
           </div>
@@ -149,22 +165,22 @@
         <div class="step" data-step-id="adopt_main_2">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Has Outcome to Adoption been started?</div>
-          <div class="step-subtitle">
-            The Person record should show an active Adoption outcome connected to the correct cat or cats.
-          </div>
+          <div class="step-subtitle">The Person record should show an active Adoption outcome.</div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_main_3')">Yes - continue</button>
-            <button class="secondary" onclick="alert('Open the person record, start an Outcome, and choose Adoption, then tap Yes')">Not yet</button>
+            <button class="secondary" onclick="alert('Open the Person record, start an Outcome, and choose Adoption, then tap Yes')">Not yet</button>
             <button class="outline" onclick="showHelp('adopt_main_2')">Show me how</button>
             <button class="outline" onclick="goBack()">Back</button>
           </div>
         </div>
 
-        <!-- ADOPTION MAIN PART 3 -->
+        <!-- ADOPTION MAIN PART 3 (vouchers) -->
         <div class="step" data-step-id="adopt_main_3">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Have vouchers been created for each cat?</div>
-          <div class="step-subtitle">Each cat should have the correct voucher recorded.</div>
+          <div class="step-subtitle">
+            Each cat should have the correct voucher recorded. Use the multi-cat example if more than one cat is being adopted.
+          </div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_main_4')">Yes - continue</button>
             <button class="secondary" onclick="alert('Create the voucher for each cat on the adoption, then tap Yes')">Not yet</button>
@@ -201,13 +217,13 @@
           </div>
         </div>
 
-        <!-- ADOPTION MAIN PART 6 -->
+        <!-- ADOPTION MAIN PART 6 (contract) -->
         <div class="step" data-step-id="adopt_main_6">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Has the contract been signed and emailed?</div>
           <div class="step-subtitle">
-            The adopter should have a copy of the signed contract.
-            For multi-cat adoptions, the contract should be generated, signed, and provided for each cat.
+            The adopter should have a copy of the signed contract.<br /><br />
+            <strong>Multi-cat?</strong> Generate a separate contract and obtain signatures for <span class="highlight">each cat</span> on the adoption.
           </div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_main_7')">Yes - continue</button>
@@ -217,11 +233,13 @@
           </div>
         </div>
 
-        <!-- ADOPTION MAIN PART 7 -->
+        <!-- ADOPTION MAIN PART 7 (payment) -->
         <div class="step" data-step-id="adopt_main_7">
           <div class="pill"><span class="dot"></span><span>Adoption</span></div>
           <div class="step-title">Is the payment slip completed and payment processed?</div>
-          <div class="step-subtitle">Payment should be collected and recorded correctly.</div>
+          <div class="step-subtitle">
+            Payment should be collected and recorded correctly. Use the multi-cat receipt example if more than one cat is on this outcome.
+          </div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('adopt_after')">Yes - continue</button>
             <button class="secondary" onclick="alert('Complete the payment slip, collect payment, and enter it in the system, then tap Yes')">Not yet</button>
@@ -293,26 +311,17 @@
           <div class="pill"><span class="dot"></span><span>After adopter leaves</span></div>
           <div class="step-title">Have ADA forms been uploaded to the cat record?</div>
           <div class="step-subtitle">
-            <p>Scan and upload all signed ADA pages to the animal record.</p>
-            <ol class="step-sublist">
+            Scan and upload all signed ADA pages to the animal record.
+            <ol>
               <li>
                 Scanned file in Downloads folder:
-                <span class="highlight">Adoption Disclosure Agreement - kitty name</span>
+                <span class="highlight">"Adoption Disclosure Agreement - kitty name"</span>
               </li>
               <li>
                 On each cat's record, go to Memo/Files to upload the file:
                 <ul>
-                  <li>
-                    For the file Name, use
-                    <span class="highlight">Signed Kitten ADA -kitty name</span>
-                    and/or
-                    <span class="highlight">Signed Medical ADA -kitty name</span>
-                    as appropriate.
-                  </li>
-                  <li>
-                    Set Type to <span class="highlight">Adoption Document</span> and Subtype to
-                    <span class="highlight">Adoption Disclosure Agreement - ADA</span>.
-                  </li>
+                  <li>For the file Name, use <span class="highlight">"Signed Kitten ADA -kitty name"</span> and/or <span class="highlight">"Signed Medical ADA -kitty name"</span> as appropriate.</li>
+                  <li>Set Type to <span class="highlight">"Adoption Document"</span> and Subtype to <span class="highlight">"Adoption Disclosure Agreement - ADA."</span></li>
                 </ul>
               </li>
             </ol>
@@ -330,14 +339,9 @@
           <div class="pill"><span class="dot"></span><span>After adopter leaves</span></div>
           <div class="step-title">Has the consultation form been uploaded?</div>
           <div class="step-subtitle">
-            <ol class="step-sublist">
-              <li>
-                Scan consultation form into Downloads folder
-                <span class="highlight">Consultation Form - Adopter's Name</span>.
-              </li>
-              <li>
-                On the person, go to Memo/Files to upload the form as a file.
-              </li>
+            <ol>
+              <li>Scan consultation form into Downloads folder <span class="highlight">"Consultation Form -Adopter's Name"</span>.</li>
+              <li>On the Person, go to Memo/Files to upload the form as a file.</li>
             </ol>
           </div>
           <div class="btn-row">
@@ -353,7 +357,13 @@
           <div class="pill"><span class="dot"></span><span>After adopter leaves</span></div>
           <div class="step-title">Has the receipt been entered in PetPoint?</div>
           <div class="step-subtitle">
-            Create and complete the receipt for the adoption so fees and payment match the outcome.
+            <p><strong>Enter the receipt:</strong></p>
+            <ol>
+              <li>From the person record, use the green plus menu to create a new <strong>Receipt</strong>.</li>
+              <li>On the Receipt - New screen, set the cash drawer and reference as your group uses them.</li>
+              <li>Add the adoption item based on age and link the correct cat.</li>
+              <li>When you click Pay, fill out the payment panel. Select Cash as the type if that is your standard, even when using Square, and note card details in the reference.</li>
+            </ol>
           </div>
           <div class="btn-row">
             <button class="primary" onclick="goToAfterReceiptNext()">Yes - continue</button>
@@ -394,7 +404,7 @@
           <div class="pill"><span class="dot"></span><span>After adopter leaves</span></div>
           <div class="step-title">Has the Outlook follow up email been sent?</div>
           <div class="step-subtitle">
-            Send the Outlook Adoption Email: BCC Adoption Notification, subject is cat name(s), and message notes cats adopted, PP done, photo sent, and counselor names.
+            Send the Outlook Adoption Email: BCC <span class="highlight">Adoption Notification</span>, subject is cat name(s), and message notes cats adopted, PP done, photo sent, and counselor names.
           </div>
           <div class="btn-row">
             <button class="primary" onclick="goTo('after_whiteboard')">Yes - continue</button>
@@ -422,10 +432,9 @@
           <div class="pill"><span class="dot"></span><span>No adoption</span></div>
           <div class="step-title">Wrap up - no adoption</div>
           <ul class="checklist">
-            <li>Create the person in PetPoint if they do not already exist.</li>
-            <li>Add Future adopt - needs discussion memo if needed.</li>
-            <li>Upload consultation form to the person record.</li>
-            <li>Update calendar with the correct reason.</li>
+            <li>Add Future adopt - needs discussion memo if needed</li>
+            <li>Upload consultation form to person record</li>
+            <li>Update calendar with correct reason</li>
           </ul>
           <div class="btn-row">
             <button class="primary" onclick="goTo('done')">All done</button>
