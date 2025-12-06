@@ -295,7 +295,7 @@ footer {
   margin: 0.4em 0 0.4em;
 }
 
-/* Help pills - back to shaded red */
+/* Help pills - shaded red */
 
 .help-detail {
   margin-top: 10px;
@@ -377,9 +377,15 @@ footer {
   background: #fff;
 }
 
+/* Make zoom Close button readable on dark background */
 .zoom-close {
   margin-top: 10px;
-  max-width: 160px;
+  max-width: 180px;
+  background: #ffffff;
+  color: #222222;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  font-weight: 700;
 }
 
 /* Responsive tweaks */
