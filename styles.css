@@ -4,6 +4,8 @@
   --text-main: #222222;
   --card-bg: #ffffff;
   --muted: #444444;
+  --ok-green: #2E7D32;
+  --ok-green-light: #E6F4EA;
 }
 
 * {
@@ -82,27 +84,6 @@ main {
   margin-bottom: 16px;
 }
 
-.step-subtitle p {
-  margin-top: 0;
-  margin-bottom: 0.5em;
-}
-
-.step-sublist {
-  margin: 0;
-  padding-left: 1.4em;
-  font-size: 1rem;
-}
-
-.step-sublist li {
-  margin-bottom: 0.3em;
-}
-
-.highlight {
-  background: #fff8a6;
-  padding: 0 2px;
-  border-radius: 3px;
-}
-
 .btn-row {
   display: flex;
   flex-direction: column;
@@ -122,29 +103,43 @@ button {
   align-items: center;
   justify-content: center;
   width: 100%;
+  transition: transform 0.05s ease-out, box-shadow 0.1s ease-out, background-color 0.1s ease-out, color 0.1s ease-out;
 }
 
+/* Positive actions */
 button.primary {
-  background: var(--fkr-red);
+  background: var(--ok-green);
   color: #ffffff;
+  box-shadow: 0 2px 6px rgba(46,125,50,0.35);
 }
 
+/* Negative / caution actions */
 button.secondary {
   background: #ffffff;
   color: var(--fkr-red);
   border: 2px solid var(--fkr-red);
 }
 
+/* Neutral choices (e.g. appointment vs walk-in) */
+button.neutral {
+  background: #ffffff;
+  color: var(--ok-green);
+  border: 2px solid var(--ok-green);
+}
+
+/* Outline / utility */
 button.outline {
   background: transparent;
   color: var(--muted);
   border: 1px solid rgba(0,0,0,0.35);
   font-size: 1.1rem;
   padding: 13px 18px;
+  box-shadow: none;
 }
 
 button:active {
   transform: scale(0.97);
+  box-shadow: none;
 }
 
 .pill {
@@ -255,7 +250,6 @@ footer {
 }
 
 /* Help overlay */
-
 .help-overlay {
   position: fixed;
   inset: 0;
@@ -274,13 +268,11 @@ footer {
 .help-card {
   max-width: 520px;
   width: 100%;
-  max-height: 90vh;
   background: #ffffff;
   border-radius: 14px;
   padding: 22px 20px 20px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.35);
   font-size: 1.15rem;
-  overflow-y: auto;
 }
 
 .help-title {
@@ -318,58 +310,62 @@ footer {
   width: auto;
 }
 
-.help-image-wrap {
-  margin-top: 10px;
-  text-align: center;
-}
-
 .help-image {
   width: 100%;
   max-width: 100%;
   border-radius: 8px;
-  margin-top: 4px;
-  display: block;
-  transition: transform 0.2s ease;
-}
-
-.help-image.zoomed {
-  transform: scale(1.4);
-  transform-origin: center center;
-}
-
-.zoom-btn {
-  margin-top: 8px;
-  padding: 8px 14px;
-  font-size: 0.95rem;
-  border-radius: 999px;
-  border: 1px solid var(--fkr-red);
-  background: #fff7f7;
-  color: var(--fkr-red);
-  cursor: pointer;
-}
-
-.zoom-btn:active {
-  transform: scale(0.97);
-}
-
-.help-detail {
   margin-top: 10px;
-  padding: 10px 14px;
-  font-size: 1rem;
-  border-radius: 999px;
-  border: 1px solid var(--fkr-red);
-  background: #fff7f7;
-  color: var(--fkr-red);
-  display: inline-flex;
+  display: block;
+  cursor: zoom-in;
+}
+
+/* yellow highlight for filenames / key phrases */
+.highlight {
+  background: #fff8b3;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+/* simple lightbox for enlarged screenshots */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
   align-items: center;
   justify-content: center;
+  z-index: 20;
+}
+
+.lightbox-overlay.active {
+  display: flex;
+}
+
+.lightbox-content {
+  max-width: 95%;
+  max-height: 95%;
+  position: relative;
+}
+
+.lightbox-content img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -36px;
+  right: 0;
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.95rem;
+  border: none;
   cursor: pointer;
 }
 
-.help-detail:active {
-  transform: scale(0.97);
-}
-
+/* responsive tweaks */
 @media (max-width: 380px) {
   body { font-size: clamp(20px, 4.2vh, 28px); }
   header h1 { font-size: 1.5rem; }
