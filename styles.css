@@ -1,3 +1,5 @@
+/* base layout */
+
 html,
 body {
   margin: 0;
@@ -8,7 +10,7 @@ body {
   color: #111827;
 }
 
-/* Header */
+/* header */
 
 .app-header {
   background-color: #b22222;
@@ -35,7 +37,7 @@ body {
   opacity: 0.9;
 }
 
-/* Layout */
+/* main card */
 
 .app-main {
   padding: 18px 12px 32px;
@@ -55,7 +57,7 @@ body {
   box-shadow: 0 12px 40px rgba(15, 23, 42, 0.15);
 }
 
-/* Top row */
+/* top row with jump */
 
 .card-top-row {
   display: flex;
@@ -75,14 +77,17 @@ body {
   flex: 1;
 }
 
+/* clean dropdown styling */
+
 .jump-select {
   width: 100%;
-  padding: 10px 36px 10px 14px;
+  padding: 10px 40px 10px 14px;
   border-radius: 999px;
   border: 1px solid #d4d4d8;
-  background: #ffffff;
+  background-color: #ffffff;
   font-size: 0.95rem;
   appearance: none;
+
   background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 7L10 12L15 7' stroke='%2371717a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
@@ -90,11 +95,11 @@ body {
 }
 
 .jump-select:focus {
-  outline: 2px solid #2563eb;
-  outline-offset: 1px;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
 }
 
-/* Progress bar */
+/* progress bar */
 
 .progress-track {
   width: 100%;
@@ -113,7 +118,7 @@ body {
   transition: width 0.25s ease-out;
 }
 
-/* Section chip and help pill */
+/* section chip and help pill row */
 
 .card-section-header {
   display: flex;
@@ -123,7 +128,7 @@ body {
   margin-bottom: 10px;
 }
 
-/* Red pills */
+/* red pills */
 
 .help-pill {
   display: inline-flex;
@@ -131,12 +136,13 @@ body {
   gap: 8px;
   padding: 6px 14px;
   border-radius: 999px;
+  border: none;
+  cursor: pointer;
+
   background: linear-gradient(135deg, #ff6961, #d83440);
   color: #ffffff;
   font-size: 0.8rem;
   font-weight: 600;
-  border: none;
-  cursor: pointer;
   box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
 }
 
@@ -155,7 +161,7 @@ body {
   background-color: #ffffff;
 }
 
-/* Question */
+/* question */
 
 .question-block {
   margin: 4px 0 12px;
@@ -169,7 +175,7 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* Answers */
+/* answer buttons */
 
 .answers-block {
   display: flex;
@@ -178,13 +184,14 @@ body {
   margin-top: 12px;
 }
 
-/* Base button */
+/* base answer look */
 
 .answer-button {
   width: 100%;
   padding: 16px 22px;
   border-radius: 999px;
-  border: 2px solid transparent;
+  border-width: 2px;
+  border-style: solid;
   font-size: 1.05rem;
   font-weight: 600;
   text-align: center;
@@ -194,31 +201,32 @@ body {
     border-color 0.08s ease-out;
 }
 
-/* Positive - green solid */
+/* positive - solid green, white text */
 
-.answer-button.positive {
+.answer-positive {
   background-color: #1f7a37;
+  border-color: #1f7a37;
   color: #ffffff;
   box-shadow: 0 4px 10px rgba(22, 163, 74, 0.4);
 }
 
-/* Negative - red outline, white fill */
+/* negative - white with red outline */
 
-.answer-button.negative {
+.answer-negative {
   background-color: #ffffff;
-  color: #ba1b1b;
   border-color: #ba1b1b;
+  color: #ba1b1b;
 }
 
-/* Neutral - green outline, white fill */
+/* neutral - white with green outline */
 
-.answer-button.neutral {
+.answer-neutral {
   background-color: #ffffff;
-  color: #1f7a37;
   border-color: #1f7a37;
+  color: #1f7a37;
 }
 
-/* Hover / active */
+/* hover / active */
 
 .answer-button:hover {
   transform: translateY(-1px);
@@ -227,16 +235,16 @@ body {
 
 .answer-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.24);
 }
 
-/* Selected state */
+/* selected outline */
 
 .answer-button.selected {
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.45);
 }
 
-/* Footer nav */
+/* footer nav */
 
 .card-footer {
   margin-top: 18px;
@@ -270,7 +278,7 @@ body {
   border-color: #e4e4e7;
 }
 
-/* Help modal */
+/* help modal */
 
 .modal-overlay {
   position: fixed;
@@ -321,7 +329,7 @@ body {
   justify-content: flex-end;
 }
 
-/* Thumbs inside help */
+/* help screenshots */
 
 .help-screenshot-container {
   margin-top: 8px;
@@ -337,7 +345,7 @@ body {
   cursor: zoom-in;
 }
 
-/* Zoom overlay */
+/* zoom overlay */
 
 .zoom-overlay {
   position: fixed;
@@ -369,7 +377,7 @@ body {
   height: auto;
 }
 
-/* Bottom Close bar */
+/* bottom Close bar */
 
 .zoom-close-bar {
   position: fixed;
@@ -386,7 +394,7 @@ body {
   cursor: pointer;
 }
 
-/* Small screens */
+/* small screens */
 
 @media (max-width: 600px) {
   .card {
