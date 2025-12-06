@@ -1,11 +1,10 @@
 :root {
   --fkr-red: #C62828;
+  --primary-green: #2E7D32;
   --bg-light: #f2f2f2;
   --text-main: #222222;
   --card-bg: #ffffff;
   --muted: #444444;
-  --ok-green: #2E7D32;
-  --ok-green-light: #E6F4EA;
 }
 
 * {
@@ -103,43 +102,36 @@ button {
   align-items: center;
   justify-content: center;
   width: 100%;
-  transition: transform 0.05s ease-out, box-shadow 0.1s ease-out, background-color 0.1s ease-out, color 0.1s ease-out;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.08s ease;
 }
 
-/* Positive actions */
 button.primary {
-  background: var(--ok-green);
+  background: var(--primary-green);
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(46,125,50,0.35);
 }
 
-/* Negative / caution actions */
 button.secondary {
   background: #ffffff;
   color: var(--fkr-red);
   border: 2px solid var(--fkr-red);
 }
 
-/* Neutral choices (e.g. appointment vs walk-in) */
 button.neutral {
   background: #ffffff;
-  color: var(--ok-green);
-  border: 2px solid var(--ok-green);
+  color: var(--primary-green);
+  border: 2px solid var(--primary-green);
 }
 
-/* Outline / utility */
 button.outline {
   background: transparent;
   color: var(--muted);
   border: 1px solid rgba(0,0,0,0.35);
   font-size: 1.1rem;
   padding: 13px 18px;
-  box-shadow: none;
 }
 
 button:active {
   transform: scale(0.97);
-  box-shadow: none;
 }
 
 .pill {
@@ -199,6 +191,8 @@ footer {
   color: var(--muted);
 }
 
+/* Progress */
+
 .progress {
   font-size: 1.1rem;
   color: var(--muted);
@@ -225,6 +219,8 @@ footer {
   transition: width 0.25s ease-out;
 }
 
+/* Step jump row */
+
 .step-jump-row {
   display: flex;
   justify-content: space-between;
@@ -250,6 +246,7 @@ footer {
 }
 
 /* Help overlay */
+
 .help-overlay {
   position: fixed;
   inset: 0;
@@ -298,6 +295,27 @@ footer {
   margin: 0.4em 0 0.4em;
 }
 
+/* Help pills - back to shaded red */
+
+.help-detail {
+  margin-top: 10px;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--fkr-red);
+  background: #fff7f7;
+  color: var(--fkr-red);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 100%;
+}
+
+.help-detail:active {
+  transform: scale(0.97);
+}
+
 .help-close-row {
   display: flex;
   justify-content: flex-end;
@@ -310,6 +328,8 @@ footer {
   width: auto;
 }
 
+/* Screenshot images */
+
 .help-image {
   width: 100%;
   max-width: 100%;
@@ -319,53 +339,51 @@ footer {
   cursor: zoom-in;
 }
 
-/* yellow highlight for filenames / key phrases */
+/* Highlighted quoted text */
+
 .highlight {
-  background: #fff8b3;
-  padding: 0 2px;
-  border-radius: 3px;
+  background: #fff59d;
 }
 
-/* simple lightbox for enlarged screenshots */
-.lightbox-overlay {
+/* Image zoom overlay */
+
+.image-zoom-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.8);
   display: none;
   align-items: center;
   justify-content: center;
+  padding: 16px;
   z-index: 20;
 }
 
-.lightbox-overlay.active {
+.image-zoom-overlay.active {
   display: flex;
 }
 
-.lightbox-content {
-  max-width: 95%;
-  max-height: 95%;
-  position: relative;
+.image-zoom-inner {
+  max-width: 95vw;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.lightbox-content img {
+.image-zoom-inner img {
   max-width: 100%;
-  max-height: 100%;
-  display: block;
+  max-height: 85vh;
+  border-radius: 10px;
+  background: #fff;
 }
 
-.lightbox-close {
-  position: absolute;
-  top: -36px;
-  right: 0;
-  background: #ffffff;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 0.95rem;
-  border: none;
-  cursor: pointer;
+.zoom-close {
+  margin-top: 10px;
+  max-width: 160px;
 }
 
-/* responsive tweaks */
+/* Responsive tweaks */
+
 @media (max-width: 380px) {
   body { font-size: clamp(20px, 4.2vh, 28px); }
   header h1 { font-size: 1.5rem; }
