@@ -16,18 +16,23 @@
 
   <main class="app-main">
     <section class="card app-card">
+      <!-- top row: mode pill placeholder + jump dropdown -->
       <div class="card-top-row">
         <div class="mode-toggle-placeholder"></div>
 
         <div class="jump-wrapper">
-          <select id="jumpSelect" class="jump-select"></select>
+          <select id="jumpSelect" class="jump-select">
+            <!-- options filled by script -->
+          </select>
         </div>
       </div>
 
+      <!-- progress bar -->
       <div class="progress-track">
         <div id="progressFill" class="progress-fill"></div>
       </div>
 
+      <!-- section chip and help chip -->
       <div class="card-section-header">
         <button
           type="button"
@@ -48,46 +53,19 @@
         </button>
       </div>
 
+      <!-- question text -->
       <article class="question-block">
         <h2 id="questionText" class="question-text">
           Any concerning behavior?
         </h2>
       </article>
 
-      <section class="answers-block">
-        <button
-          type="button"
-          class="answer-button positive"
-          data-answer="no"
-        >
-          No - everything looks appropriate
-        </button>
-
-        <button
-          type="button"
-          class="answer-button negative"
-          data-answer="yes"
-        >
-          Yes - concern exists
-        </button>
-
-        <button
-          type="button"
-          class="answer-button neutral"
-          data-answer="option3"
-        >
-          Option 3
-        </button>
-
-        <button
-          type="button"
-          class="answer-button neutral"
-          data-answer="option4"
-        >
-          Option 4
-        </button>
+      <!-- answer buttons -->
+      <section id="answersBlock" class="answers-block">
+        <!-- buttons injected by script so we can style them by type -->
       </section>
 
+      <!-- footer navigation -->
       <footer class="card-footer">
         <div class="footer-buttons">
           <button
@@ -111,7 +89,7 @@
 
   <!-- Help modal -->
   <div id="helpModal" class="modal-overlay" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog" role="dialog" aria-modal="true">
       <header class="modal-header">
         <h2 id="helpTitle" class="modal-title">Any concerning behavior?</h2>
       </header>
@@ -119,12 +97,11 @@
       <section class="modal-body">
         <p id="helpIntro">During the meet and greet:</p>
         <ul id="helpList">
-          <li>Watch how the person handles and talks about the cat.</li>
-          <li>If anything feels off, pause and talk to staff.</li>
+          <!-- help bullets injected by script -->
         </ul>
 
         <div id="helpScreenshotContainer" class="help-screenshot-container">
-          <!-- thumbnails added by script -->
+          <!-- screenshot thumbs injected by script -->
         </div>
       </section>
 
